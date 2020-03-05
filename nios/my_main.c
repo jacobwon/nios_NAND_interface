@@ -11,13 +11,21 @@ Author: Prawar Poudel (pp0030@uah.edu)
 		4 March 2020
 */
 
+// macro for debug functionality
+// .. set to false for experimentation
+#define DEBUG true
+
 // let us include mandatory header file
 #include <stdio.h>
 
 // user defined header file
-#include <nios_interface_header.h>
+#include <sources/nios/nand_interface_header.h>
 
 int main()
 {
+	#if DEBUG
+	printf("Starting the NAND interface program..\n");
+	#endif
 
+	// the first thing to do is to make start-up the NAND set
 }
