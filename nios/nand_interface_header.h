@@ -7,13 +7,17 @@ Description: This file has the essential functions that are needed for interfaci
 #ifndef nand_interface_header_h
 #define nand_interface_header_h
 
+#include <stdio.h>
+#include <stdlib.h>
 #include <stdint.h>
+#include <stdbool.h>
 
 // The computer system used here is DE1_SoC that runs at 100Mhz (10 ns period)
 //  connection to the NAND is made in parallel port 1 on JP1
 // .. the address of which is at 0xff200060
 // .. so here we will create masks for the data to be read/written
 #define JUMPER_LOCATION ((uint32_t*) 0xff200060)
+#define PUSH_KEY_LOCATION ((uint32_t*) 0xff200050)
 
 #define DQ_mask (0x000000ff)	//connected at D7D6..D0
 
@@ -62,7 +66,8 @@ void send_command(uint8_t command_to_send);
 // .. .. maintain WE high for certain duration and make it low
 // .. .. put next address bits on DQ and cause rising edge of WE
 // .. .. address expected is 5-bytes ColAdd1, ColAdd2, RowAdd1, RowAdd2, RowAdd3
-void send_address(uint8_t* address_to_send, int num_address_bytes);
+void send_addresses(uint8_t* address_to_send, uint8_t num_address_bytes);
+void send_address(uint8_t address_to_send);
 
 // function to send address from the host machine to the NAND flash
 // .. Data is written from DQ[7:0] to the cache register of the selected die (LUN)
@@ -73,7 +78,7 @@ void send_address(uint8_t* address_to_send, int num_address_bytes);
 // .. WE should be low
 // .. put data on DQ and latch WE high for certain duration
 // .. make WE low and repeat the procedure again for number of bytes required (int num_data)
-void send_data(uint8_t* data_to_send,int num_data);
+void send_data(uint8_t* data_to_send,uint8_t num_data);
 
 // function to receive data from the NAND device
 // .. data can be received when on ready state (RDY signal)
@@ -84,7 +89,7 @@ void send_data(uint8_t* data_to_send,int num_data);
 // .. .. ensure RDY is high
 // .. .. WE should be high
 // .. .. data is available at DQ pins on the falling edge of RE pin (RE is also input to NAND)
-void get_data(uint8_t* data_received,int num_data);
+void get_data(uint8_t* data_received,uint8_t num_data);
 
 // function to disable Program and Erase operation
 // .. when WP is low, program and erase operation are disabled
@@ -124,7 +129,7 @@ void reset_device();
 // .. .. all the cache contents are invalid
 // .. .. if any operation is going on, partial operations might take place
 // .. .. the command issuing has to be followed by sequence of (3-byte) address of the LUN
-void reset_LUN(uint8_t* address_LUN, int num_address_bytes);
+void reset_LUN(uint8_t* address_LUN, uint8_t num_address_bytes);
 
 // function to read the device ID
 // when read from address 00h, it returns 8-byte ID of which first 5-bytes are manufacturer ID
@@ -135,7 +140,7 @@ void reset_LUN(uint8_t* address_LUN, int num_address_bytes);
 // .. ..send 00 as address
 // .. wait for tWHR duration
 // .. read 8-bytes from the DQ pins
-void read_device_id_00(int* device_id_array, int num_data);
+void read_device_id_00(uint8_t* device_id_array);
 
 // function to read the 4-byte ONFI code
 // when read from address 00h, it returns 4-byte ONFI code
@@ -146,7 +151,7 @@ void read_device_id_00(int* device_id_array, int num_data);
 // .. ..send 20 as address
 // .. wait for tWHR duration
 // .. read 4-bytes from the DQ pins
-void read_device_id_20(int* device_id_array, int num_data);
+void read_device_id_20(uint8_t* device_id_array);
 
 // function to read the unique identifier programmed into the target
 // .. only accepted when device is not busy
@@ -157,6 +162,8 @@ void read_device_id_20(int* device_id_array, int num_data);
 // .. .. 32 bytes of data is received
 // .. .. .. first 16 bytes is the unique ID and next 16-bytes is complement of the data
 // .. .. .. XOR should be done to ensure correctness
-void read_unique_id(int* device_id_array, int num_data);
+void read_unique_id(uint8_t* device_id_array, uint8_t num_data);
+
+void print_array(uint8_t* my_array, uint8_t len);
 
 #endif

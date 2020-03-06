@@ -15,17 +15,26 @@ Author: Prawar Poudel (pp0030@uah.edu)
 // .. set to false for experimentation
 #define DEBUG true
 
-// let us include mandatory header file
-#include <stdio.h>
-
 // user defined header file
-#include <sources/nios/nand_interface_header.h>
+#include "nand_interface_header.h"
 
 int main()
 {
-	#if DEBUG
+#if DEBUG
 	printf("Starting the NAND interface program..\n");
-	#endif
+	fflush(stdout);
+#endif
+
+	// let us wait on key press to start any operation
+	volatile uint32_t* push_button = PUSH_KEY_LOCATION;
+	while((*push_button&0xf)==0);
 
 	// the first thing to do is to make start-up the NAND set
+	device_initialization();
+
+	uint8_t my_device_id[4];
+	read_device_id_20(my_device_id);
+	print_array(my_device_id,4);
+
+	return 0;
 }
