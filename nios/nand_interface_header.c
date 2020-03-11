@@ -393,7 +393,7 @@ void read_status(uint8_t* status_value)
 	get_data(status_value,1);
 }
 
-
+// just a normal function to print an array to terminal
 void print_array(uint8_t* my_array, uint8_t len)
 {
 	for(uint8_t i=0;i<len;i++)
@@ -402,3 +402,5 @@ void print_array(uint8_t* my_array, uint8_t len)
 	}
 	printf("\n");
 }
+
+// write a function to perform an erase operation
