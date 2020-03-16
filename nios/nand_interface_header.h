@@ -12,6 +12,11 @@ Description: This file has the essential functions that are needed for interfaci
 #include <stdint.h>
 #include <stdbool.h>
 
+
+// macro for debug functionality
+// .. set to false for experimentation
+#define DEBUG true
+
 // The computer system used here is DE1_SoC that runs at 100Mhz (10 ns period)
 //  connection to the NAND is made in parallel port 1 on JP1
 // .. the address of which is at 0xff200060
@@ -78,7 +83,7 @@ void send_address(uint8_t address_to_send);
 // .. WE should be low
 // .. put data on DQ and latch WE high for certain duration
 // .. make WE low and repeat the procedure again for number of bytes required (int num_data)
-void send_data(uint8_t* data_to_send,uint8_t num_data);
+void send_data(uint8_t* data_to_send,uint16_t num_data);
 
 // function to receive data from the NAND device
 // .. data can be received when on ready state (RDY signal)
@@ -89,7 +94,7 @@ void send_data(uint8_t* data_to_send,uint8_t num_data);
 // .. .. ensure RDY is high
 // .. .. WE should be high
 // .. .. data is available at DQ pins on the falling edge of RE pin (RE is also input to NAND)
-void get_data(uint8_t* data_received,uint8_t num_data);
+void get_data(uint8_t* data_received,uint16_t num_data);
 
 // function to disable Program and Erase operation
 // .. when WP is low, program and erase operation are disabled
@@ -100,11 +105,13 @@ void write_protect();
 // .. when WP is low, program and erase operation are disabled
 // .. when WP is high, program and erase operation are enabled
 void disable_program();
+void enable_program();
 
 // function to disable erase operation
 // .. when WP is low, program and erase operation are disabled
 // .. when WP is high, program and erase operation are enabled
 void disable_erase();
+void enable_erase();
 
 // function to initialize the NAND device
 // .. following are the tasks to be performed for initialization of NAND device
@@ -165,5 +172,12 @@ void read_device_id_20(uint8_t* device_id_array);
 void read_unique_id(uint8_t* device_id_array, uint8_t num_data);
 
 void print_array(uint8_t* my_array, uint8_t len);
+
+void read_status(uint8_t* status_value);
+
+// write a function to perform an read operation
+void read_page(uint8_t* address,uint8_t address_length,uint8_t* data_read,uint8_t* data_read_len);
+
+void read_page_cache_sequential(uint8_t* address, uint8_t address_length,uint8_t* data_read,uint16_t* data_read_len,uint16_t num_pages);
 
 #endif

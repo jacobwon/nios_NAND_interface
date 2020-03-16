@@ -11,9 +11,6 @@ Author: Prawar Poudel (pp0030@uah.edu)
 		4 March 2020
 */
 
-// macro for debug functionality
-// .. set to false for experimentation
-#define DEBUG true
 
 // user defined header file
 #include "nand_interface_header.h"
@@ -33,8 +30,12 @@ int main()
 	device_initialization();
 
 	uint8_t my_device_id[4];
+	enable_program();
 	read_device_id_20(my_device_id);
 	print_array(my_device_id,4);
+
+	read_status(my_device_id);
+	print_array(my_device_id,1);
 
 	return 0;
 }
