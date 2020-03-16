@@ -43,14 +43,14 @@ void send_command(uint8_t command_to_send)
 	*jumper_address = (*jumper_address&(~DQ_mask))|(command_to_send & DQ_mask);
 
 	//insert delay here
-	for(uint8_t i=0;i<4;i++);
+	for(uint8_t i=0;i<4;i++);	// tDS
 
 	// disable write enable again
 	*jumper_address |= (WE_mask);
 
 	//insert delay here
 	// .. because the command is written on the rising edge of WE
-	for(uint8_t i=0;i<2;i++);
+	for(uint8_t i=0;i<2;i++);	// tDH
 
 	// .. WE goes low
 	*jumper_address &= ~(WE_mask);
@@ -84,19 +84,19 @@ void send_addresses(uint8_t* address_to_send, uint8_t num_address_bytes)
 
 	for(uint8_t i=0;i<num_address_bytes;i++)
 	{
-		//.. a simple delay
-		for(uint8_t j=0;j<2;j++);
 		// .. Put data on the DQ pin
 		// .. .. the idea is clear the least 8-bits
 		// .. .. copy the values to be sent
 		*jumper_address = (*jumper_address&(~DQ_mask))|(address_to_send[i] & DQ_mask);
+		//.. a simple delay
+		for(uint8_t j=0;j<4;j++); //tDS
 
 		// .. Address is loaded from DQ on rising edge of WE
 		*jumper_address |= WE_mask;
 		// .. maintain WE high for certain duration and make it low
 		
 		//insert delay here
-		for(uint8_t j=0;j<4;j++);
+		for(uint8_t j=0;j<4;j++); 	// tDH
 
 		*jumper_address &= ~(WE_mask);
 
@@ -123,12 +123,12 @@ void send_address(uint8_t address_to_send)
 
 	for(uint8_t i=0;i<1;i++)
 	{
-		//.. a simple delay
-		for(uint8_t j=0;j<2;j++);
 		// .. Put data on the DQ pin
 		// .. .. the idea is clear the least 8-bits
 		// .. .. copy the values to be sent
 		*jumper_address = (*jumper_address&(~DQ_mask))|(address_to_send & DQ_mask);
+		//.. a simple delay
+		for(uint8_t j=0;j<4;j++);
 
 		// .. Address is loaded from DQ on rising edge of WE
 		*jumper_address |= WE_mask;
@@ -163,17 +163,17 @@ void send_data(uint8_t* data_to_send,uint16_t num_data)
 
 	for(uint16_t i=0;i<num_data;i++)
 	{
-		//.. a simple delay
-		for(uint8_t j=0;j<2;j++);
 		// .. put data on DQ and latch WE high for certain duration
 		// .. .. the idea is clear the least 8-bits
 		// .. .. copy the values to be sent
 		*jumper_address = (*jumper_address&(~DQ_mask))|(data_to_send[i] & DQ_mask);
+		//.. a simple delay
+		for(uint8_t j=0;j<4;j++);	// tDS
 
 		*jumper_address |= WE_mask;
 		
 		//insert delay here
-		for(uint8_t j=0;j<4;j++);
+		for(uint8_t j=0;j<4;j++);	//tDH
 
 		// .. make WE low and repeat the procedure again for number of bytes required (int num_data)
 		*jumper_address &= ~WE_mask;
@@ -212,7 +212,7 @@ void get_data(uint8_t* data_received,uint16_t num_data)
 		*jumper_address &= ~RE_mask;
 		
 		//insert delay here
-		for(uint8_t j=0;j<2;j++);
+		for(uint8_t j=0;j<4;j++);
 
 		// read the data
 		data_received[i] = *jumper_address & DQ_mask;
@@ -306,7 +306,8 @@ void reset_device()
 	// wait for busy signal again
 	
 	//insert delay here
-	for(uint16_t i=0;i<65500;i++);	// tPOR
+	// .. not needed because the next polling statement will take care
+	// for(uint16_t i=0;i<65500;i++);	// tPOR
 
 	while((*jumper_address & RB_mask)==0);
 }
