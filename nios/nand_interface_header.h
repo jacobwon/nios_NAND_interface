@@ -22,6 +22,8 @@ Description: This file has the essential functions that are needed for interfaci
 // .. the address of which is at 0xff200060
 // .. so here we will create masks for the data to be read/written
 #define JUMPER_LOCATION ((uint32_t*) 0xff200060)
+#define JUMPER_DIRECTION ((uint32_t*) 0xff200064)
+
 #define PUSH_KEY_LOCATION ((uint32_t*) 0xff200050)
 
 #define DQ_mask (0x000000ff)	//connected at D7D6..D0
@@ -179,5 +181,21 @@ void read_status(uint8_t* status_value);
 void read_page(uint8_t* address,uint8_t address_length,uint8_t* data_read,uint8_t* data_read_len);
 
 void read_page_cache_sequential(uint8_t* address, uint8_t address_length,uint8_t* data_read,uint16_t* data_read_len,uint16_t num_pages);
+
+void change_read_column(uint8_t* col_address);
+
+void change_read_column_enhanced(uint8_t* address);
+
+void change_write_column(uint8_t* col_address);
+
+void change_row_address(uint8_t* address);
+
+void read_mode();
+
+void program_page(uint8_t* address,uint8_t* data,uint16_t num_data);
+
+void erase_block(uint8_t* row_address);
+
+void test_signal(uint32_t  in_mask);
 
 #endif

@@ -5,6 +5,8 @@
 // .. we are using TSOP NAND flash which only supports asynchronous interface
 
 volatile uint32_t* jumper_address =  JUMPER_LOCATION;
+volatile uint32_t* jumper_direction =  JUMPER_DIRECTION;
+volatile uint32_t* push_button = PUSH_KEY_LOCATION;
 
 void check_status()
 {	
@@ -552,7 +554,7 @@ void change_read_column_enhanced(uint8_t* address)
 	for(uint8_t i=0;i<4;i++);	// tRHW
 
 	send_command(0x06);
-	send_addresses(col_address,5);
+	send_addresses(address,5);
 
 	send_command(0xe0);
 
@@ -635,5 +637,23 @@ void erase_block(uint8_t* row_address)
 	if(status&0x01)
 	{
 		printf("Failed Erase Operation\n");
+	}
+}
+
+
+void test_signal(uint32_t in_mask)
+{
+	// in_mask = 0x02;
+
+	for(uint16_t i = 0;i<100;i++);
+	*jumper_direction |= in_mask;
+
+	printf("To test here .. \n");
+
+	while(1)
+	{
+		*jumper_address ^=  in_mask;
+		// for(uint32_t j=0;j<4;j++);
+		asm("nop");
 	}
 }

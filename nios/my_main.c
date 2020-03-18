@@ -17,14 +17,15 @@ Author: Prawar Poudel (pp0030@uah.edu)
 
 int main()
 {
+	// let us wait on key press to start any operation
+	volatile uint32_t* push_button = PUSH_KEY_LOCATION;
+	while((*push_button&0xf)==0);
+
 #if DEBUG
 	printf("Starting the NAND interface program..\n");
 	fflush(stdout);
 #endif
 
-	// let us wait on key press to start any operation
-	volatile uint32_t* push_button = PUSH_KEY_LOCATION;
-	while((*push_button&0xf)==0);
 
 	// the first thing to do is to make start-up the NAND set
 	device_initialization();
@@ -36,6 +37,8 @@ int main()
 
 	read_status(my_device_id);
 	print_array(my_device_id,1);
+
+	test_signal(ALE_mask);
 
 	return 0;
 }
