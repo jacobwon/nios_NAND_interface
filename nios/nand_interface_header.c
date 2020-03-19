@@ -24,6 +24,10 @@ void check_status()
 // .. the procedure is as follows ( in the sequence )
 void send_command(uint8_t command_to_send)
 {
+	// set the required pins as output
+	*jumper_direction |= 0x03fff;
+	*jumper_direction &= ~0x4000;
+
 	// let us first reset the DQ pints
 	*jumper_address &= ~(DQ_mask);
 
@@ -54,15 +58,9 @@ void send_command(uint8_t command_to_send)
 	// .. because the command is written on the rising edge of WE
 	for(uint8_t i=0;i<2;i++);	// tDH
 
-	// .. WE goes low
-	*jumper_address &= ~(WE_mask);
-
 	// disable CLE
 	*jumper_address &= ~(CLE_mask);
 	
-	// disable CE again
-	// this might be unnecessary
-	// *jumper_address |= (CE_mask);
 	
 	// reset all the data on DQ pins
 	*jumper_address &= ~(DQ_mask);
@@ -72,6 +70,10 @@ void send_command(uint8_t command_to_send)
 // .. the procedure is as follows (in the sequence)
 void send_addresses(uint8_t* address_to_send, uint8_t num_address_bytes)
 {
+	// set the required pins as output
+	*jumper_direction |= 0x03fff;
+	*jumper_direction &= ~0x4000;
+
 	// .. .. CE goes low
 	*jumper_address &= ~CE_mask;
 	// .. CLE goes low
@@ -81,11 +83,13 @@ void send_addresses(uint8_t* address_to_send, uint8_t num_address_bytes)
 	// .. RE goes high
 	*jumper_address |= RE_mask;
 	
-	// .. set the WE to low to create a rising edge later on
-	*jumper_address &= ~WE_mask;
-
 	for(uint8_t i=0;i<num_address_bytes;i++)
 	{
+		//insert delay here
+		for(uint8_t j=0;j<4;j++); 	// tDH
+
+		*jumper_address &= ~(WE_mask);
+
 		// .. Put data on the DQ pin
 		// .. .. the idea is clear the least 8-bits
 		// .. .. copy the values to be sent
@@ -97,11 +101,6 @@ void send_addresses(uint8_t* address_to_send, uint8_t num_address_bytes)
 		*jumper_address |= WE_mask;
 		// .. maintain WE high for certain duration and make it low
 		
-		//insert delay here
-		for(uint8_t j=0;j<4;j++); 	// tDH
-
-		*jumper_address &= ~(WE_mask);
-
 		// .. put next address bits on DQ and cause rising edge of WE
 		// .. address expected is 5-bytes ColAdd1, ColAdd2, RowAdd1, RowAdd2, RowAdd3
 	}
@@ -111,6 +110,10 @@ void send_addresses(uint8_t* address_to_send, uint8_t num_address_bytes)
 
 void send_address(uint8_t address_to_send)
 {
+	// set the required pins as output
+	*jumper_direction |= 0x03fff;
+	*jumper_direction &= ~0x4000;
+
 	// .. .. CE goes low
 	*jumper_address &= ~CE_mask;
 	// .. CLE goes low
@@ -120,11 +123,13 @@ void send_address(uint8_t address_to_send)
 	// .. RE goes high
 	*jumper_address |= RE_mask;
 	
-	// .. set the WE to low to create a rising edge later on
-	*jumper_address &= ~WE_mask;
-
 	for(uint8_t i=0;i<1;i++)
 	{
+		//insert delay here
+		for(uint8_t j=0;j<4;j++);
+
+		*jumper_address &= ~(WE_mask);	
+
 		// .. Put data on the DQ pin
 		// .. .. the idea is clear the least 8-bits
 		// .. .. copy the values to be sent
@@ -136,11 +141,6 @@ void send_address(uint8_t address_to_send)
 		*jumper_address |= WE_mask;
 		// .. maintain WE high for certain duration and make it low
 		
-		//insert delay here
-		for(uint8_t j=0;j<4;j++);
-
-		*jumper_address &= ~(WE_mask);		
-
 		// .. put next address bits on DQ and cause rising edge of WE
 		// .. address expected is 5-bytes ColAdd1, ColAdd2, RowAdd1, RowAdd2, RowAdd3
 	}
@@ -160,11 +160,15 @@ void send_data(uint8_t* data_to_send,uint16_t num_data)
 	*jumper_address &= ~ALE_mask;
 	// .. RE should be high
 	*jumper_address |= RE_mask;
-	// .. WE should be low
-	*jumper_address &= ~WE_mask;
 
 	for(uint16_t i=0;i<num_data;i++)
 	{
+		//insert delay here
+		for(uint8_t j=0;j<4;j++);	//tDH
+
+		// .. make WE low and repeat the procedure again for number of bytes required (int num_data)
+		*jumper_address &= ~WE_mask;
+
 		// .. put data on DQ and latch WE high for certain duration
 		// .. .. the idea is clear the least 8-bits
 		// .. .. copy the values to be sent
@@ -174,11 +178,6 @@ void send_data(uint8_t* data_to_send,uint16_t num_data)
 
 		*jumper_address |= WE_mask;
 		
-		//insert delay here
-		for(uint8_t j=0;j<4;j++);	//tDH
-
-		// .. make WE low and repeat the procedure again for number of bytes required (int num_data)
-		*jumper_address &= ~WE_mask;
 	}
 }
 
@@ -186,6 +185,8 @@ void send_data(uint8_t* data_to_send,uint16_t num_data)
 // .. data is output from the cache regsiter of selected die
 void get_data(uint8_t* data_received,uint16_t num_data)
 {
+	*jumper_direction &= ~0x40ff;
+
 	// .. data can be received when on ready state (RDY signal)
 	// .. ensure RDY is high
 	// .. .. just keep spinning here checking for ready signal
@@ -201,26 +202,25 @@ void get_data(uint8_t* data_received,uint16_t num_data)
 	*jumper_address &= ~ALE_mask;
 	*jumper_address &= ~CLE_mask;
 
-	// .. make RE high
-	*jumper_address |= RE_mask;
-
 	for(uint16_t i=0;i<num_data;i++)
 	{			
-			
-		//insert delay here
+		// set the RE to high for next cycle
+		*jumper_address &= ~RE_mask;
+
 		for(uint8_t j=0;j<4;j++);
 
 		// .. data is available at DQ pins on the falling edge of RE pin (RE is also input to NAND)
-		*jumper_address &= ~RE_mask;
+		*jumper_address |= RE_mask;
 		
 		//insert delay here
 		for(uint8_t j=0;j<4;j++);
 
 		// read the data
 		data_received[i] = *jumper_address & DQ_mask;
-		// set the RE to high for next cycle
-		*jumper_address |= RE_mask;
-	}	
+	}
+
+	// set the pins as output
+	*jumper_direction |= 0x03fff;	
 }
 
 // function to disable Program and Erase operation
@@ -286,6 +286,9 @@ void enable_erase()
 // .. R/B should be monotired again after issuing 0XFF command
 void device_initialization()
 {
+	*jumper_direction &= ~0x4000;
+	*jumper_direction |= 0x3fff;
+
 	//insert delay here
 	for(uint16_t i=0;i<1000;i++);	//10 us max
 	// wait for R/B signal to go high
@@ -537,6 +540,7 @@ void read_page_cache_sequential(uint8_t* address, uint8_t address_length,uint8_t
 	get_data(data_read,*data_read_len);
 }
 
+// follow the following function call by get_data() function call
 void change_read_column(uint8_t* col_address)
 {
 	for(uint8_t i=0;i<4;i++);	// tRHW
@@ -549,6 +553,7 @@ void change_read_column(uint8_t* col_address)
 	for(uint8_t i=0;i<4;i++);	//tCCS
 }
 
+// follow the following function call by get_data() function call
 void change_read_column_enhanced(uint8_t* address)
 {
 	for(uint8_t i=0;i<4;i++);	// tRHW
@@ -561,6 +566,7 @@ void change_read_column_enhanced(uint8_t* address)
 	for(uint8_t i=0;i<4;i++);	//tCCS	
 }
 
+// following function call should be followed by send_data() function calls
 void change_write_column(uint8_t* col_address)
 {
 	send_command(0x85);
@@ -568,6 +574,7 @@ void change_write_column(uint8_t* col_address)
 
 	for(uint8_t i=0;i<4;i++);	//tCCS
 }
+
 
 // change teh row address where the cache register contents will be programmed in NAND flash
 // .. row address means block and page address
@@ -605,6 +612,7 @@ void program_page(uint8_t* address,uint8_t* data,uint16_t num_data)
 	for(uint8_t i=0;i<4;i++); // tADL
 
 	send_data(data,num_data);
+	send_command(0x10);
 
 	for(uint16_t i=0;i<22000;i++); // tPROG
 

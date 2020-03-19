@@ -30,13 +30,19 @@ int main()
 	// the first thing to do is to make start-up the NAND set
 	device_initialization();
 
-	uint8_t my_device_id[4];
+	uint8_t my_device_id[16];
 	enable_program();
 	read_device_id_20(my_device_id);
 	print_array(my_device_id,4);
 
-	read_status(my_device_id);
-	print_array(my_device_id,1);
+	read_device_id_00(my_device_id);
+	print_array(my_device_id,4);
+
+	read_device_id_00(my_device_id);
+	print_array(my_device_id,8);
+
+	read_unique_id(my_device_id,16);
+	print_array(my_device_id,16);
 
 	test_signal(ALE_mask);
 
