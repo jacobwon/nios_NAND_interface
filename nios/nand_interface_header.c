@@ -653,15 +653,13 @@ void test_signal(uint32_t in_mask)
 {
 	// in_mask = 0x02;
 
-	for(uint16_t i = 0;i<100;i++);
-	*jumper_direction |= in_mask;
-
-	printf("To test here .. \n");
-
-	while(1)
-	{
-		*jumper_address ^=  in_mask;
-		// for(uint32_t j=0;j<4;j++);
-		asm("nop");
-	}
+	asm("addi r3,r0,0xff200060");
+	asm("stwio r3,r0");
+	asm("stwioi r3,1");
+	asm("br -12");
 }
+
+// void my_test()
+// {
+// 	asm();
+// }
