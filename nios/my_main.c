@@ -28,7 +28,25 @@ int main()
 	printf("Starting the NAND interface program..\n");
 	fflush(stdout);
 #endif
+	printf("Device ID:\t");
+	uint8_t device_id_array[4];
+	// let us read the device ID
+	read_device_id_20(device_id_array);
+	print_array(device_id_array,4);
 
+	printf("Detecting Device:\t");
+	// let us predict the name of device
+	detect_device();
+
+	printf("Unique Device ID:\t");
+	uint8_t unique_device_id_array[16];
+	read_unique_id(unique_device_id_array, 16);
+	print_array(unique_device_id_array,16);
+
+	// let us just read a random page for now
+	// .. 5-byte page address
+	// .. c1,c2,r1,r2,r3
+	// uint8_t my_page_address[5] = {}; 
 
 	return 0;
 }
