@@ -22,6 +22,10 @@ Description: This file has the essential functions that are needed for interfaci
 // .. the address of which is at 0xff200060
 // .. so here we will create masks for the data to be read/written
 #define JUMPER_LOCATION ((uint32_t*) 0xff200060)
+
+// value 1 in direction register means output
+// .. 0 means input
+// .. following is just the address of the register
 #define JUMPER_DIRECTION ((uint32_t*) 0xff200064)
 
 #define PUSH_KEY_LOCATION ((uint32_t*) 0xff200050)
@@ -48,6 +52,18 @@ Description: This file has the essential functions that are needed for interfaci
 
 #define RB_shift 14
 #define RB_mask (0x1<<RB_shift) // connected to D14
+
+
+#define SAMPLE_TIME asm("nop");asm("nop");asm("nop")
+#define HOLD_TIME asm("nop");asm("nop");asm("nop");asm("nop");asm("nop")
+// 100ns
+#define tWW asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop")
+#define tWB {for(uint8_t i=0;i<20;i++);}
+#define tRR {for(uint8_t i=0;i<4;i++);}
+#define tRHW tWB
+#define tCCS tWB
+#define tADL tWB
+#define tWHR {for(uint8_t i=0;i<12;i++);} // .. tWHR = 120ns
 
 
 // put the user defined header codes here
@@ -151,6 +167,11 @@ void reset_LUN(uint8_t* address_LUN, uint8_t num_address_bytes);
 // .. read 8-bytes from the DQ pins
 void read_device_id_00(uint8_t* device_id_array);
 
+// function that reads the device ID and tries to detect the device name
+// .. call the function device_id at address 00h
+// .. lookup table based finding for device name
+void detect_decive();
+
 // function to read the 4-byte ONFI code
 // when read from address 00h, it returns 4-byte ONFI code
 // follow the following sequences
@@ -177,8 +198,12 @@ void print_array(uint8_t* my_array, uint8_t len);
 
 void read_status(uint8_t* status_value);
 
+// use this for multi-LUN device to avoid bus contention
+// .. r1, r2 and r3 are the three-bytes for the row addresss
+void read_status_enhanced(uint8_t* status_value, uint8_t* r1r2r3);
+
 // write a function to perform an read operation
-void read_page(uint8_t* address,uint8_t address_length,uint8_t* data_read,uint8_t* data_read_len);
+void read_page(uint8_t* address,uint8_t address_length);
 
 void read_page_cache_sequential(uint8_t* address, uint8_t address_length,uint8_t* data_read,uint16_t* data_read_len,uint16_t num_pages);
 
@@ -194,8 +219,8 @@ void read_mode();
 
 void program_page(uint8_t* address,uint8_t* data,uint16_t num_data);
 
-void erase_block(uint8_t* row_address);
+void program_page_cache(uint8_t* address,uint8_t* data,uint16_t num_data,uint8_t num_pages);
 
-void test_signal(uint32_t  in_mask);
+void erase_block(uint8_t* row_address);
 
 #endif
