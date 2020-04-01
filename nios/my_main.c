@@ -28,7 +28,13 @@ int main()
 	printf("Starting the NAND interface program..\n");
 	fflush(stdout);
 #endif
-	printf("Device ID:\t");
+	printf("Device ID 00:\t");
+	uint8_t device_id_array_0[8];
+	// let us read the device ID
+	read_device_id_00(device_id_array_0);
+	print_array(device_id_array_0,8);
+
+	printf("Device ID 20:\t");
 	uint8_t device_id_array[4];
 	// let us read the device ID
 	read_device_id_20(device_id_array);

@@ -377,7 +377,7 @@ void read_device_id_00(uint8_t* device_id_array)
 // .. call the function device_id at address 00h
 // .. lookup table based finding for device name
 // .. this function is not decisive
-void detect_decive()
+void detect_device()
 {
 	// create a 8-byte variable
 	// .. static array
@@ -418,7 +418,7 @@ void detect_decive()
 
 	if(device_name[0]=='?')
 	{
-		printf("Device ID not detected\n");
+		printf("Device Family Not Recognized\n");
 	}else
 	{
 		printf("Detected Device ID is %s\n", my_device_id);
@@ -481,6 +481,8 @@ void read_unique_id(uint8_t* device_id_array, uint8_t num_data)
 	while((*jumper_address & RB_mask)==0);
 
 	uint8_t* data_temp = (uint8_t*)malloc(32*sizeof(uint8_t));
+
+	tRR;
 
 #if DEBUG
 	printf("Before reading from the device\n");
@@ -777,7 +779,7 @@ void erase_block(uint8_t* row_address)
 	send_command(0xd0);
 
 	tWB;
-	
+
 	// check if it is out of Busy cycle
 	while((*jumper_address & RB_mask)==0);
 

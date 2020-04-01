@@ -11,11 +11,12 @@ Description: This file has the essential functions that are needed for interfaci
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <string.h>
 
 
 // macro for debug functionality
 // .. set to false for experimentation
-#define DEBUG true
+#define DEBUG false
 
 // The computer system used here is DE1_SoC that runs at 100Mhz (10 ns period)
 //  connection to the NAND is made in parallel port 1 on JP1
@@ -170,7 +171,7 @@ void read_device_id_00(uint8_t* device_id_array);
 // function that reads the device ID and tries to detect the device name
 // .. call the function device_id at address 00h
 // .. lookup table based finding for device name
-void detect_decive();
+void detect_device();
 
 // function to read the 4-byte ONFI code
 // when read from address 00h, it returns 4-byte ONFI code
