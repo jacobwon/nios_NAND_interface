@@ -98,7 +98,7 @@ void send_addresses(uint8_t* address_to_send, uint8_t num_address_bytes)
 		// .. .. copy the values to be sent
 		*jumper_address = (*jumper_address&(~DQ_mask))|(address_to_send[i] & DQ_mask);
 #if DEBUG
-		printf("%x,", (uint8_t)*jumper_address&0xff);
+		printf("0x%x,", (uint8_t)*jumper_address&0xff);
 #endif
 		//.. a simple delay
 		SAMPLE_TIME; //tDS
@@ -811,6 +811,8 @@ printf("Program Operation Successful\n");
 
 void erase_block(uint8_t* row_address)
 {	
+	*jumper_direction &= ~RB_mask;
+
 	// check if it is out of Busy cycle
 	while((*jumper_address & RB_mask)==0);
 
