@@ -59,12 +59,12 @@ Description: This file has the essential functions that are needed for interfaci
 #define HOLD_TIME asm("nop");asm("nop");asm("nop");asm("nop");asm("nop")
 // 100ns
 #define tWW asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop")
-#define tWB {for(uint8_t i=0;i<20;i++);}
-#define tRR {for(uint8_t i=0;i<4;i++);}
+#define tWB {for(uint8_t i=0;i<20;i++) asm("nop");}
+#define tRR {for(uint8_t i=0;i<4;i++) asm("nop");}
 #define tRHW tWB
 #define tCCS tWB
 #define tADL tWB
-#define tWHR {for(uint8_t i=0;i<12;i++);} // .. tWHR = 120ns
+#define tWHR {for(uint8_t i=0;i<12;i++) asm("nop");} // .. tWHR = 120ns
 
 
 // put the user defined header codes here
@@ -130,6 +130,7 @@ void enable_program();
 // .. when WP is low, program and erase operation are disabled
 // .. when WP is high, program and erase operation are enabled
 void disable_erase();
+void write_enable();
 void enable_erase();
 
 // function to initialize the NAND device
