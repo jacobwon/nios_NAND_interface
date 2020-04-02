@@ -16,7 +16,7 @@ Description: This file has the essential functions that are needed for interfaci
 
 // macro for debug functionality
 // .. set to false for experimentation
-#define DEBUG false
+#define DEBUG true
 
 // The computer system used here is DE1_SoC that runs at 100Mhz (10 ns period)
 //  connection to the NAND is made in parallel port 1 on JP1
@@ -195,7 +195,7 @@ void read_device_id_20(uint8_t* device_id_array);
 // .. .. .. XOR should be done to ensure correctness
 void read_unique_id(uint8_t* device_id_array, uint8_t num_data);
 
-void print_array(uint8_t* my_array, uint8_t len);
+void print_array(uint8_t* my_array, uint16_t len);
 
 void read_status(uint8_t* status_value);
 

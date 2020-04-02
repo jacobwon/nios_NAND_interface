@@ -76,6 +76,10 @@ void send_addresses(uint8_t* address_to_send, uint8_t num_address_bytes)
 	*jumper_direction |= 0x03fff;
 	*jumper_direction &= ~0x4000;
 
+#if DEBUG
+	printf("Sending Address: ");
+#endif
+
 	// .. .. CE goes low
 	*jumper_address &= ~CE_mask;
 	// .. CLE goes low
@@ -87,15 +91,15 @@ void send_addresses(uint8_t* address_to_send, uint8_t num_address_bytes)
 	
 	for(uint8_t i=0;i<num_address_bytes;i++)
 	{
-		//insert delay here
-		HOLD_TIME;	// tDH
-
 		*jumper_address &= ~(WE_mask);
 
 		// .. Put data on the DQ pin
 		// .. .. the idea is clear the least 8-bits
 		// .. .. copy the values to be sent
 		*jumper_address = (*jumper_address&(~DQ_mask))|(address_to_send[i] & DQ_mask);
+#if DEBUG
+		printf("%x,", (uint8_t)*jumper_address&0xff);
+#endif
 		//.. a simple delay
 		SAMPLE_TIME; //tDS
 
@@ -105,9 +109,18 @@ void send_addresses(uint8_t* address_to_send, uint8_t num_address_bytes)
 		
 		// .. put next address bits on DQ and cause rising edge of WE
 		// .. address expected is 5-bytes ColAdd1, ColAdd2, RowAdd1, RowAdd2, RowAdd3
+		
+		//insert delay here
+		HOLD_TIME;	// tDH
 	}
 	// .. ALE goes low
 	*jumper_address &=  ~(ALE_mask);
+	// reset all the data on DQ pins
+	*jumper_address &= ~(DQ_mask);
+
+#if DEBUG
+	printf("\n");
+#endif
 }
 
 // function to send address to the NAND device 
@@ -129,9 +142,6 @@ void send_address(uint8_t address_to_send)
 	
 	for(uint8_t i=0;i<1;i++)
 	{
-		//insert delay here
-		HOLD_TIME;	// tDH
-
 		*jumper_address &= ~(WE_mask);
 
 		// .. Put data on the DQ pin
@@ -147,9 +157,14 @@ void send_address(uint8_t address_to_send)
 		
 		// .. put next address bits on DQ and cause rising edge of WE
 		// .. address expected is 5-bytes ColAdd1, ColAdd2, RowAdd1, RowAdd2, RowAdd3
+
+		//insert delay here
+		HOLD_TIME;	// tDH
 	}
 	// .. ALE goes low
 	*jumper_address &=  ~(ALE_mask);
+	// reset all the data on DQ pins
+	*jumper_address &= ~(DQ_mask);
 }
 
 // function to send address from the host machine to the NAND flash
@@ -168,9 +183,6 @@ void send_data(uint8_t* data_to_send,uint16_t num_data)
 
 	for(uint16_t i=0;i<num_data;i++)
 	{
-		//insert delay here
-		HOLD_TIME;	//tDH
-
 		// .. make WE low and repeat the procedure again for number of bytes required (int num_data)
 		*jumper_address &= ~WE_mask;
 
@@ -182,7 +194,13 @@ void send_data(uint8_t* data_to_send,uint16_t num_data)
 		SAMPLE_TIME;	// tDS
 
 		*jumper_address |= WE_mask;
-		
+
+		//insert delay here
+		HOLD_TIME;	//tDH
+
+		// reset all the data on DQ pins
+		// .. this might be unnecesary
+		*jumper_address &= ~(DQ_mask);		
 	}
 }
 
@@ -191,6 +209,8 @@ void send_data(uint8_t* data_to_send,uint16_t num_data)
 // .. it is supported following a read operation of NAND array
 void get_data(uint8_t* data_received,uint16_t num_data)
 {
+	// set the DQ pins as IP to the NIOS processor
+	// .. 0 is IP and 1 is OP
 	*jumper_direction &= ~0x40ff;
 
 	// .. data can be received when on ready state (RDY signal)
@@ -222,10 +242,11 @@ void get_data(uint8_t* data_received,uint16_t num_data)
 		
 		//insert delay here
 		// .. tREH = 30 ns
-		asm("nop");asm("nop");
+		asm("nop");
 
 		// read the data
 		data_received[i] = *jumper_address & DQ_mask;
+		asm("nop");
 	}
 
 	// set the pins as output
@@ -413,6 +434,18 @@ void detect_device()
 					}					
 				}				
 			}
+		}else if(my_device_id[1]==0x64)
+		{
+			if(my_device_id[2]==0x44)
+			{
+				if(my_device_id[3]==0x4b)
+				{
+					if(my_device_id[4]==0xa9)
+					{
+						strcpy(device_name,"MT29F64G08CBABA\0");	
+					}					
+				}				
+			}
 		}
 	}
 
@@ -421,7 +454,7 @@ void detect_device()
 		printf("Device Family Not Recognized\n");
 	}else
 	{
-		printf("Detected Device ID is %s\n", my_device_id);
+		printf("Detected Device ID is %s\n", device_name);
 	}
 }
 // function to read the 4-byte ONFI code
@@ -448,7 +481,7 @@ void read_device_id_20(uint8_t* device_id_array)
 
 	get_data(device_id_array,4);
 #if DEBUG
-	printf("Before reading from the device\n");
+	printf("After reading from the device\n");
 	print_array(device_id_array,4);
 #endif
 }
@@ -479,6 +512,9 @@ void read_unique_id(uint8_t* device_id_array, uint8_t num_data)
 
 	// make sure none of the LUNs are busy
 	while((*jumper_address & RB_mask)==0);
+
+	// read from different address
+	// change_read_column();
 
 	uint8_t* data_temp = (uint8_t*)malloc(32*sizeof(uint8_t));
 
@@ -540,9 +576,9 @@ void read_status_enhanced(uint8_t* status_value, uint8_t* r1r2r3)
 }
 
 // just a normal function to print an array to terminal
-void print_array(uint8_t* my_array, uint8_t len)
+void print_array(uint8_t* my_array, uint16_t len)
 {
-	for(uint8_t i=0;i<len;i++)
+	for(uint16_t i=0;i<len;i++)
 	{
 		printf("0x%x ", my_array[i]);
 	}
@@ -696,7 +732,11 @@ void program_page(uint8_t* address,uint8_t* data,uint16_t num_data)
 	send_command(0x10);
 
 	tWB;
-
+	
+#if DEBUG
+	printf("Inside program Fn: Address is: ");
+	print_array(address,5);
+#endif
 	// check if it is out of Busy cycle
 	while((*jumper_address & RB_mask)==0);
 
@@ -779,10 +819,16 @@ void erase_block(uint8_t* row_address)
 	send_command(0xd0);
 
 	tWB;
+	
+#if DEBUG
+	printf("Inside Erase Fn: Address is: ");
+	print_array(row_address,3);
+#endif
 
 	// check if it is out of Busy cycle
 	while((*jumper_address & RB_mask)==0);
 
+	// let us read the status register value
 	uint8_t status;
 	read_status(&status);	
 	if(status&0x01)

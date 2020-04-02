@@ -28,31 +28,62 @@ int main()
 	printf("Starting the NAND interface program..\n");
 	fflush(stdout);
 #endif
-	printf("Device ID 00:\t");
+	printf(" * Device ID 00:\t");
 	uint8_t device_id_array_0[8];
 	// let us read the device ID
 	read_device_id_00(device_id_array_0);
 	print_array(device_id_array_0,8);
 
-	printf("Device ID 20:\t");
+	printf(" * Device ID 20:\t");
 	uint8_t device_id_array[4];
 	// let us read the device ID
 	read_device_id_20(device_id_array);
 	print_array(device_id_array,4);
 
-	printf("Detecting Device:\t");
+	printf(" * Detecting Device:\t");
 	// let us predict the name of device
 	detect_device();
-
-	printf("Unique Device ID:\t");
-	uint8_t unique_device_id_array[16];
-	read_unique_id(unique_device_id_array, 16);
-	print_array(unique_device_id_array,16);
 
 	// let us just read a random page for now
 	// .. 5-byte page address
 	// .. c1,c2,r1,r2,r3
-	// uint8_t my_page_address[5] = {}; 
+	uint8_t my_page_address[5] = {0x00,0x00,0x0,0xf7,0x00}; 
+	// uint8_t new_col[2] = {0x10,0x00};
+	uint8_t data_received[8192];
+
+	printf(" * Printing array value:");
+	memset(data_received,0x0,sizeof(data_received));
+	print_array(data_received,100);
+
+	printf(" * Reading address (address in reverse order:)");
+	print_array(my_page_address,5);
+	read_page(my_page_address,5);
+	get_data(data_received,100);
+	print_array(data_received,100);
+
+	// let us erase the block
+	printf(" * Erasing address (address in reverse order:)");
+	print_array(my_page_address+2,3);
+	erase_block(my_page_address+2);
+	// now read the erased page, should be 0xffs
+	read_page(my_page_address,5);
+	get_data(data_received,100);
+	print_array(data_received,100);
+
+	// let us clear the buffer
+	// should be 00s
+	printf("Clearing the buffer: \n");
+	memset(data_received,0x0,sizeof(data_received));
+	print_array(data_received,100);
+
+
+	// let us program the page
+	printf(" * Programming address (address in reverse order:)");
+	print_array(my_page_address,5);
+	program_page(my_page_address,data_received,8192);
+	read_page(my_page_address,5);
+	get_data(data_received,100);
+	print_array(data_received,100);
 
 	return 0;
 }
