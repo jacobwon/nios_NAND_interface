@@ -2,6 +2,31 @@
 <html>
 <head>
 	<title>NIOS NAND Interface: Documentation</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<style>
+	.collapsible {
+	  background-color: #777;
+	  color: white;
+	  cursor: pointer;
+	  padding: 18px;
+	  width: 100%;
+	  border: none;
+	  text-align: left;
+	  outline: none;
+	  font-size: 15px;
+	}
+
+	.active, .collapsible:hover {
+	  background-color: #555;
+	}
+
+	.content {
+	  padding: 0 18px;
+	  display: none;
+	  overflow: hidden;
+	  background-color: #f1f1f1;
+	}
+	</style>
 </head>
 
 <body>
@@ -10,18 +35,18 @@
 			NAND flash memory is extensively used for mass storage purpose. They have found their usage in SSDs., memory cards and are also used in almost all the gadgets in todays electronic ecosystem. A number of research focused on NAND memory or flash memory in general are performed focusing primarily in using these memory for security purposes, securing data, making efficient storage strategy etc.
 		</p>
 		<p>
-			In this research, we present an interface to the NAND memory, specifically Open NAND Flash Interface (ONFI 2.2) with NIOS computer system. The NIOS computer system is implemented in DE1-SoC where the computer runs at 100Mhz frequency. Most of the research work presented for NAND flash memory do not reveal the interface they use or it just seems the interface frequency is a bottleneck in the systems. Thus we wanted to create infrastructure for interested parties such that they can modify the content as their own need.
+			In this research, we present an interface to the NAND memory, specifically flash memory that is compliant to Open NAND Flash Interface (ONFI 2.2). The flash memory is interfaced to NIOS computer system. The NIOS computer system is implemented in DE1-SoC where the computer runs at 100Mhz frequency. Most of the research work presented for NAND flash memory do not reveal the interface they use or it just seems the interface frequency is a bottleneck in the system. Thus we wanted to create infrastructure for anyone interested such that they can modify the content presented here as their own need.
 		</p>
 		<p>
 			Technical requirments are:
 			<ul>
 				<li>The memory has to be ONFI confirmant.</li>
-				<li>The pinout should be TSOP.</li>
+				<li>The pinout should be TSOP (or make changes pin configuration).</li>
 				<li>Please verify and change the pin configuration in the code based on your hardware setting.</li>
 			</ul>
 		</p>
 		<p>
-			Althuogh, this implemtation is based on NIOS computer in DE1-SoC system, you can pretty much use it with any microcontroller changing the value of following variablesL
+			Althuogh, this implemtation is based on NIOS computer in DE1-SoC system, you can pretty much use it with any microcontroller changing the value of following variables.
 			<ul>
 				<li>JUMPER_LOCATION</li>
 				<li>JUMPER_DIRECTION</li>
@@ -29,15 +54,52 @@
 			</ul>
 		</p>
 	<h1>Technical Details</h1>
-		<h2>Computer System</h2>
+		<button type="button" class="collapsible">Computer System</button>
+		<div class="content">
 			<p>
 				NIOS computer system is a soft core processor that can be instantiated on Intel FPGA device which can be programmed into the FPGA using Intel Platform Designer program that comes integrated with Quartus. It is a complete computer system and thus a complete description of NIOS system is out of scope for this document. Any interested reader should follow the pdf document as this <a href="ftp://ftp.intel.com/Pub/fpgaup/pub/Intel_Material/17.0/Tutorials/Nios2_introduction.pdf">link</a>.
 			</p>
 			<p>
-				Of the different versions of the architectures of NIOS, we are using the "fast" or <i>NIOS II/f</i> comfiguration. Since it is softcore, you can choose whatever you want to program into the FPGA fabric.
+				Of the different versions of the architectures of NIOS, we are using the "fast" or <i>NIOS II/f</i> configuration. Since it is softcore, you can choose whatever you want to program into the FPGA fabric.
 			</p>
 			<p>
 				The platform that we are using is DE1-SoC system. The basic NIOS computer system for DE1-SoC system is provided by Intel under University Program. No change in the basic computer system is made as of this point.
 			</p>
+		</div>
+		<button type="button" class="collapsible">Interface Detail</button>
+		<div class="content">
+			<p>
+				ONFI standard defines NAND flash memory to be interfaced with parallel data lines. These data lines are 8-bit wide signals that also can be used to transfer command as well as the address.
+			</p>
+			<p>
+				Some of the other signals that are needed for interface are: <i>Address Latch Enable (ALE), Command Latch Enable (CLE), Read Enable (RE), Write Enable (WE), Ready/BUSY (R/B), Chip Enable (CE) and Write Protect (WP)</i>.
+			</p>
+			<p>
+				The packages can be 40-pin TSOP or 100-pin BGA for NAND flash memory. In our case the flash memory is MT29F64G08CBABA from Micron Technology which is a 40-pin TSOP flash memory. It is a MLC NAND flash memory in which each cell of flash memory can store 2-bits information.
+			</p>
+			<p>
+				On the microcontroller side, we are using NIOS computer as our microcontroller in DE1-SoC. The parallel port of the DE1-SoC is used to interface with the flash memory. Each parallel port is 32-bit wide, thus it is sufficient to use a single parallel port for our interfacing purpose. Since all the IO are memory mapped, the address of the data is indicated by <i>JUMPER_LOCATION</i> in the code, while the direction register is indicated by <i>JUMPER_DIRECTION</i>.
+			</p>
+			<p>
+				Other pins that are used for our case are indicated by the <i>mask</i> values in the header file. Please refer to the header file before porting the code for your purpose. You may need to change the code as necessary.
+			</p>
+		</div>
+
+		<script>
+			var coll = document.getElementsByClassName("collapsible");
+			var i;
+
+			for (i = 0; i < coll.length; i++) {
+			  coll[i].addEventListener("click", function() {
+			    this.classList.toggle("active");
+			    var content = this.nextElementSibling;
+			    if (content.style.display === "block") {
+			      content.style.display = "none";
+			    } else {
+			      content.style.display = "block";
+			    }
+			  });
+			}
+		</script>
 </body>
 </html>
