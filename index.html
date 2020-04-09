@@ -185,6 +185,9 @@
 		</div>
 <hr>
 	<h1>Time Profile of Operations</h1>
+		<p>
+			The above data are measuring the internal times that the flash takes for each of the operations listed. This means from when the last command to initiate the erase, program and read operation were issued.
+		</p>
 		<button type="button" class="collapsible"> Erase Profile </button>
 			<div class="content">
 				<p>Based on the measurement, the erase operation of two blocks of flash memory each took:</p>
@@ -207,14 +210,49 @@
 			<div class="content">
 				<p>Based on the measurement, the page read operation of many rows of flash memory each took:</p>
 				<ul>
-					<li>45753 cc (i.e. 45753 ns)</li>
-					<li>46073 cc (i.e. 46073 ns)</li>
-					<li>46153 cc (i.e. 46153 ns)</li>
-					<li>47177 cc (i.e. 47177 ns)</li>
-					<li>45218 cc (i.e. 45218 ns)</li>
-					<li>45560 cc (i.e. 45560 ns)</li>
+					<li>45753 cc (i.e. 457530 ns)</li>
+					<li>46073 cc (i.e. 460730 ns)</li>
+					<li>46153 cc (i.e. 461530 ns)</li>
+					<li>47177 cc (i.e. 471770 ns)</li>
+					<li>45218 cc (i.e. 452180 ns)</li>
+					<li>45560 cc (i.e. 455600 ns)</li>
 				</ul>
-				<p>Based on this measurement, the program time of a row is 46 us (~100 us in Datasheet).</p>
+				<p>Based on this measurement, the program time of a row is 460 us (~100 us in Datasheet).</p>
+			</div>
+<hr>
+		<p>
+			Following are the observation including the latching of all the command bytes. If there are multiple bytes to be sent, for example for program operation 8192 data bytes are needed, the time to send this is also included.
+		</p>
+		<button type="button" class="collapsible"> Erase Profile Inclusive</button>
+			<div class="content">
+				<p>Based on the measurement, the erase operation of two blocks of flash memory each took:</p>
+				<ul>
+					<li>182971 cc (i.e. 1829710 ns)</li>
+					<li>184343 cc (i.e. 1843430 ns)</li>
+				</ul>
+				<p>Based on this measurement, the erase time of a block is 1.8 ms (~3 ms in Datasheet).</p>
+			</div>
+		<button type="button" class="collapsible"> Program Profile Inclusive</button>
+			<div class="content">
+				<p>Based on the measurement, the program operation of two pages of flash memory each took:</p>
+				<ul>
+					<li>2969778 cc (i.e. 29697780 ns)</li>
+					<li>2963443 cc (i.e. 29634430 ns)</li>
+				</ul>
+				<p>Based on this measurement, the program time of a page is 29.6 ms (~1.3 ms in Datasheet).</p>
+			</div>
+		<button type="button" class="collapsible"> Page Read Profile Inclusive</button>
+			<div class="content">
+				<p>Based on the measurement, the page read operation of many rows of flash memory each took:</p>
+				<ul>
+					<li>59469 cc (i.e. 594690 ns)</li>
+					<li>58463 cc (i.e. 584630 ns)</li>
+					<li>59197 cc (i.e. 591970 ns)</li>
+					<li>62134 cc (i.e. 621340 ns)</li>
+					<li>59037 cc (i.e. 590370 ns)</li>
+					<li>59030 cc (i.e. 590300 ns)</li>
+				</ul>
+				<p>Based on this measurement, the program time of a row is 590 us (~100 us in Datasheet).</p>
 			</div>
 <hr>			
 	<h1>Code API</h1>
