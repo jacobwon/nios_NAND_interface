@@ -647,6 +647,10 @@ void read_page(uint8_t* address,uint8_t address_length)
 
 	send_command(0x00);
 	send_addresses(address,address_length);
+#if TIMER_PROFILE
+	printf("Page read Operation Follows\n");
+	timer_start();
+#endif
 	send_command(0x30);
 
 	// just a delay
@@ -655,6 +659,9 @@ void read_page(uint8_t* address,uint8_t address_length)
 	while((*jumper_address & RB_mask)==0);
 	// tRR = 40ns
 	tRR;
+#if TIMER_PROFILE
+	PRINT_CC_TAKEN;
+#endif	
 }
 
 // following is the faster read operation
@@ -729,6 +736,10 @@ void program_page(uint8_t* address,uint8_t* data,uint16_t num_data)
 	tADL;
 
 	send_data(data,num_data);
+#if TIMER_PROFILE
+	printf("Program Page Operation Follows\n");
+	timer_start();
+#endif
 	send_command(0x10);
 
 	tWB;
@@ -739,6 +750,9 @@ void program_page(uint8_t* address,uint8_t* data,uint16_t num_data)
 #endif
 	// check if it is out of Busy cycle
 	while((*jumper_address & RB_mask)==0);
+#if TIMER_PROFILE
+	PRINT_CC_TAKEN;
+#endif	
 
 	uint8_t status_value;
 	// .. use  the commended code for multi-plane die
@@ -818,6 +832,10 @@ void erase_block(uint8_t* row_address)
 
 	send_command(0x60);
 	send_addresses(row_address,3);
+#if TIMER_PROFILE
+	printf("Erase Block Operation Follows\n");
+	timer_start();
+#endif
 	send_command(0xd0);
 
 	tWB;
@@ -829,6 +847,9 @@ void erase_block(uint8_t* row_address)
 
 	// check if it is out of Busy cycle
 	while((*jumper_address & RB_mask)==0);
+#if TIMER_PROFILE
+	PRINT_CC_TAKEN;
+#endif	
 
 	// let us read the status register value
 	uint8_t status;
