@@ -17,6 +17,61 @@ Description: This file has the essential functions that are needed for interfaci
 // macro for debug functionality
 // .. set to false for experimentation
 #define DEBUG true
+#define FORCE_INLINE __attribute__((always_inline))
+// set the following variable to true if you want to following functions:
+// .. timer_start()
+// .. timer_end()
+#define TIMER_PROFILE true
+// following are the registers in NIOS computer
+// .. the base address
+#define TIMER_BASE ((uint32_t*) 0xff202000)
+// .. the control register
+#define TIMER_CONTROL ((uint32_t*) 0xff202004)
+// .. timer counter low (only 16-bits)
+#define TIMER_COUNTER_LOW ((uint32_t*) 0xff202008)
+// .. timer counter high (only 16-bits)
+#define TIMER_COUNTER_HIGH ((uint32_t*) 0xff20200C)
+// .. timer counter snapshot low (only 16-bits)
+#define TIMER_COUNTER_SNAP_LOW ((uint32_t*) 0xff202010)
+// .. timer counter snapshot high (only 16-bits)
+#define TIMER_COUNTER_SNAP_HIGH ((uint32_t*) 0xff202014)
+// .. instead of making call to timer_diff(), use the following statement
+#define PRINT_CC_TAKEN printf(".. the last operation took %lu cc\n.",timer_diff())
+
+// function timer_start()
+// .. following function starts the timer in downwards direction
+// .. that means we will have max values in the counter and count downwards
+FORCE_INLINE inline void timer_start()
+{
+	*TIMER_COUNTER_LOW = 0xffff;
+	*TIMER_COUNTER_HIGH = 0xffff;
+	// .. bit 0: interupt enable, bit 1: continuous mode, bit 2:start counting
+	*TIMER_CONTROL = 0x006; //0b0110
+}
+
+// function timer_end()
+// .. following function takes the snapshot from the counter and puts them in snap register
+// .. do not make a call to this function from user code, see timer_diff instead
+FORCE_INLINE inline void timer_end()
+{
+	// grab the snap shot value
+	// .. to catch the snapshot value, just write anything to the snap register
+	*TIMER_COUNTER_SNAP_LOW = 1;
+	// now we can stop the timer
+	// .. bit 3 is STOP
+	*TIMER_CONTROL = 0x08;
+}
+
+// function timer_diff
+// .. this function gives out the time in nanoseconds as measured by the timer
+FORCE_INLINE inline  uint32_t timer_diff()
+{
+	// first stop the timer
+	timer_end();
+	// the initial value that we started was 0xff ff ff ff ff
+	uint32_t clock_count = 0xffffffff-((*TIMER_COUNTER_SNAP_HIGH)*65536+(*TIMER_COUNTER_SNAP_LOW)); // in cc
+	return clock_count;
+}
 
 // The computer system used here is DE1_SoC that runs at 100Mhz (10 ns period)
 //  connection to the NAND is made in parallel port 1 on JP1
