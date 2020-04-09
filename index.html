@@ -183,6 +183,40 @@
 			</code>
 		</pre>
 		</div>
+
+	<h1>Time Profile of Operations</h1>
+		<button type="button" class="collapsible"> Erase Profile </button>
+			<div class="content">
+				<p>Based on the measurement, the erase operation of two blocks of flash memory each took:</p>
+				<ul>
+					<li>167701 cc (i.e. 1677010 ns)</li>
+					<li>167437 cc (i.e. 1674370 ns)</li>
+				</ul>
+				<p>Based on this measurement, the erase time of a block is 1.67 ms (~3 ms in Datasheet).</p>
+			</div>
+		<button type="button" class="collapsible"> Program Profile </button>
+			<div class="content">
+				<p>Based on the measurement, the program operation of two pages of flash memory each took:</p>
+				<ul>
+					<li>105181 cc (i.e. 1051810 ns)</li>
+					<li>101285 cc (i.e. 1012850 ns)</li>
+				</ul>
+				<p>Based on this measurement, the program time of a page is 1.0 ms (~1.3 ms in Datasheet).</p>
+			</div>
+		<button type="button" class="collapsible"> Page Read Profile </button>
+			<div class="content">
+				<p>Based on the measurement, the page read operation of many rows of flash memory each took:</p>
+				<ul>
+					<li>45753 cc (i.e. 45753 ns)</li>
+					<li>46073 cc (i.e. 46073 ns)</li>
+					<li>46153 cc (i.e. 46153 ns)</li>
+					<li>47177 cc (i.e. 47177 ns)</li>
+					<li>45218 cc (i.e. 45218 ns)</li>
+					<li>45560 cc (i.e. 45560 ns)</li>
+				</ul>
+				<p>Based on this measurement, the program time of a row is 46 us (~100 us in Datasheet).</p>
+			</div>
+			
 	<h1>Code API</h1>
 		<p>
 			In the following section we will present the description of different functions that are implemented. All these functions are derived from the datasheet of the Micron NAND flash device MT29F64G08CBABA. It should be compliant of ONFI 2.2 standard.
@@ -1200,39 +1234,6 @@
 				</code>
 			</pre>
 		</div>
-
-	<h1>Time Profile of Operations</h1>
-		<button type="button" class="collapsible"> Erase Profile </button>
-			<div class="content">
-				<p>Based on the measurement, the erase operation of two blocks of flash memory each took:</p>
-				<ul>
-					<li>167701 cc (i.e. 1677010 ns)</li>
-					<li>167437 cc (i.e. 1674370 ns)</li>
-				</ul>
-				<p>Based on this measurement, the erase time of a block is 1.67 ms (~3 ms in Datasheet).</p>
-			</div>
-		<button type="button" class="collapsible"> Program Profile </button>
-			<div class="content">
-				<p>Based on the measurement, the program operation of two pages of flash memory each took:</p>
-				<ul>
-					<li>105181 cc (i.e. 1051810 ns)</li>
-					<li>101285 cc (i.e. 1012850 ns)</li>
-				</ul>
-				<p>Based on this measurement, the program time of a page is 1.0 ms (~1.3 ms in Datasheet).</p>
-			</div>
-		<button type="button" class="collapsible"> Page Read Profile </button>
-			<div class="content">
-				<p>Based on the measurement, the page read operation of many rows of flash memory each took:</p>
-				<ul>
-					<li>45753 cc (i.e. 45753 ns)</li>
-					<li>46073 cc (i.e. 46073 ns)</li>
-					<li>46153 cc (i.e. 46153 ns)</li>
-					<li>47177 cc (i.e. 47177 ns)</li>
-					<li>45218 cc (i.e. 45218 ns)</li>
-					<li>45560 cc (i.e. 45560 ns)</li>
-				</ul>
-				<p>Based on this measurement, the program time of a row is 46 us (~100 us in Datasheet).</p>
-			</div>
 
 		<script>
 			var coll = document.getElementsByClassName("collapsible");
