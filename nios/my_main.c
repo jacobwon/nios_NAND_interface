@@ -59,23 +59,9 @@ int main()
 	printf(" * Reading address (address in reverse order:)");
 	print_array(my_page_address,5);
 
-#if TIMER_PROFILE
-	printf("Read Page Operation Follows\n");
-	timer_start();
-#endif
 	read_page(my_page_address,5);
-#if TIMER_PROFILE
-	PRINT_CC_TAKEN;
-#endif	
 	change_read_column(new_col);
-#if TIMER_PROFILE
-	printf("Get 100 data-bytes from a Page Operation Follows\n");
-	timer_start();
-#endif
 	get_data(data_received,100);
-#if TIMER_PROFILE
-	PRINT_CC_TAKEN;
-#endif	
 	print_array(data_received,100);
 
 	printf(" * Reading address (address in reverse order:)");
@@ -89,14 +75,7 @@ int main()
 	printf(" * Erasing address (address in reverse order:)");
 	print_array(my_page_address+2,3);
 	enable_erase();
-#if TIMER_PROFILE
-	printf("Erase Block Operation Follows\n");
-	timer_start();
-#endif
 	erase_block(my_page_address+2);
-#if TIMER_PROFILE
-	PRINT_CC_TAKEN;
-#endif	
 	disable_erase();
 
 	// now read the erased page, should be 0xffs
@@ -109,14 +88,7 @@ int main()
 	printf(" * Erasing address (address in reverse order:)");
 	print_array(my_page_address2+2,3);
 	enable_erase();
-#if TIMER_PROFILE
-	printf("Erase Block Operation Follows\n");
-	timer_start();
-#endif
 	erase_block(my_page_address2+2);
-#if TIMER_PROFILE
-	PRINT_CC_TAKEN;
-#endif	
 	disable_erase();
 	// now read the erased page, should be 0xffs
 	read_page(my_page_address2,5);
@@ -135,14 +107,7 @@ int main()
 	printf(" * Programming address (address in reverse order:)");
 	print_array(my_page_address,5);
 	enable_erase();
-#if TIMER_PROFILE
-	printf("Program Page Operation Follows\n");
-	timer_start();
-#endif
 	program_page(my_page_address,data_received,8192);
-#if TIMER_PROFILE
-	PRINT_CC_TAKEN;
-#endif	
 	disable_erase();
 	read_page(my_page_address,5);
 	change_read_column(new_col);
@@ -152,14 +117,7 @@ int main()
 	printf(" * Programming address (address in reverse order:)");
 	print_array(my_page_address2,5);
 	enable_erase();
-#if TIMER_PROFILE
-	printf("Program Page Operation Follows\n");
-	timer_start();
-#endif
 	program_page(my_page_address2,data_received,8192);
-#if TIMER_PROFILE
-	PRINT_CC_TAKEN;
-#endif	
 	disable_erase();
 	read_page(my_page_address2,5);
 	change_read_column(new_col);
