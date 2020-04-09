@@ -657,11 +657,11 @@ void read_page(uint8_t* address,uint8_t address_length)
 	tWB;
 	// check for RDY signal
 	while((*jumper_address & RB_mask)==0);
-	// tRR = 40ns
-	tRR;
 #if TIMER_PROFILE
 	PRINT_CC_TAKEN;
 #endif	
+	// tRR = 40ns
+	tRR;
 }
 
 // following is the faster read operation
