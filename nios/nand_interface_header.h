@@ -16,7 +16,7 @@ Description: This file has the essential functions that are needed for interfaci
 
 // macro for debug functionality
 // .. set to false for experimentation
-#define DEBUG true
+#define DEBUG false
 #define FORCE_INLINE __attribute__((always_inline))
 // set the following variable to true if you want to following functions:
 // .. timer_start()
