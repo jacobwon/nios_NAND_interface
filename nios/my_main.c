@@ -64,7 +64,7 @@ int main()
 	get_data(data_received,100);
 	print_array(data_received,100);
 
-	printf(" * Reading address (address in reverse order:)");
+	printf(" 1* Reading address (address in reverse order:)");
 	print_array(my_page_address2,5);
 	read_page(my_page_address2,5);
 	change_read_column(new_col);
@@ -72,7 +72,7 @@ int main()
 	print_array(data_received,100);
 
 	// let us erase the block
-	printf(" * Erasing address (address in reverse order:)");
+	printf(" 2* Erasing address (address in reverse order:)");
 	print_array(my_page_address+2,3);
 	enable_erase();
 	erase_block(my_page_address+2);
@@ -85,7 +85,7 @@ int main()
 	print_array(data_received,100);
 
 	// let us erase the block
-	printf(" * Erasing address (address in reverse order:)");
+	printf(" 3* Erasing address (address in reverse order:)");
 	print_array(my_page_address2+2,3);
 	enable_erase();
 	erase_block(my_page_address2+2);
@@ -104,7 +104,7 @@ int main()
 
 
 	// let us program the page
-	printf(" * Programming address (address in reverse order:)");
+	printf(" 4* Programming address (address in reverse order:)");
 	print_array(my_page_address,5);
 	enable_erase();
 	program_page(my_page_address,data_received,8192);
@@ -114,12 +114,20 @@ int main()
 	get_data(data_received,100);
 	print_array(data_received,100);
 
-	printf(" * Programming address (address in reverse order:)");
+	// lets see if fast read is working here
+	printf(" 5* Programming address (address in reverse order:)");
 	print_array(my_page_address2,5);
 	enable_erase();
+	for(uint8_t i = 50;i<200;i++)
+		data_received[i] = i;
 	program_page(my_page_address2,data_received,8192);
 	disable_erase();
 	read_page(my_page_address2,5);
+	change_read_column(new_col);
+	get_data_fast(data_received,100);
+	print_array(data_received,100);
+	get_data(data_received,100);
+	print_array(data_received,100);
 	change_read_column(new_col);
 	get_data(data_received,100);
 	print_array(data_received,100);
