@@ -230,14 +230,14 @@ void get_data(uint8_t* data_received,uint16_t num_data)
 
 	for(uint16_t i=0;i<num_data;i++)
 	{			
-		// set the RE to high for next cycle
+		// set the RE to low for next cycle
 		*jumper_address &= ~RE_mask;
 
 		// tRP = 50ns
 		SAMPLE_TIME;
 		asm("nop");
 
-		// .. data is available at DQ pins on the falling edge of RE pin (RE is also input to NAND)
+		// .. data is available at DQ pins on the rising edge of RE pin (RE is also input to NAND)
 		*jumper_address |= RE_mask;
 		
 		//insert delay here
@@ -247,6 +247,58 @@ void get_data(uint8_t* data_received,uint16_t num_data)
 		// read the data
 		data_received[i] = *jumper_address & DQ_mask;
 		asm("nop");
+	}
+
+	// set the pins as output
+	*jumper_direction |= 0x03fff;	
+}
+
+
+// function to receive data from the NAND device
+// .. data is output from the cache regsiter of selected die
+// .. it is supported following a read operation of NAND array
+// .. here the tRC<30ns so the data will be available in next falling edge of RE
+void get_data_fast(uint8_t* data_received,uint16_t num_data)
+{
+	// set the DQ pins as IP to the NIOS processor
+	// .. 0 is IP and 1 is OP
+	*jumper_direction &= ~0x40ff;
+
+	// .. data can be received when on ready state (RDY signal)
+	// .. ensure RDY is high
+	// .. .. just keep spinning here checking for ready signal
+	while((*jumper_address & RB_mask)== 0x00);
+
+	// .. data can be received following READ operation
+	// .. the procedure should be as follows
+	// .. .. CE should be low
+	*jumper_address &= ~CE_mask;
+	// .. make WE high
+	*jumper_address |= WE_mask;
+	// .. .. ALE and CLE should be low
+	*jumper_address &= ~ALE_mask;
+	*jumper_address &= ~CLE_mask;
+
+	// set the RE to low for next cycle
+	// .. we will ignore the falling edge here
+	// *jumper_address &= ~RE_mask;
+	// *jumper_address |= RE_mask;
+
+	for(uint16_t i=0;i<num_data;i++)
+	{			
+		// set the RE to low for next cycle
+		*jumper_address &= ~RE_mask;
+
+		// read the data
+		data_received[i] = *jumper_address & DQ_mask;
+
+		// // tRP = default delay
+
+		// .. data is available at DQ pins on the rising edge of RE pin (RE is also input to NAND)
+		*jumper_address |= RE_mask;
+		
+		//insert delay here
+		// .. tREH =  default delay here
 	}
 
 	// set the pins as output
@@ -664,6 +716,7 @@ void read_page(uint8_t* address,uint8_t address_length)
 	tRR;
 }
 
+
 // following is the faster read operation
 // .. essentially calls the read_page function above
 // .. and reads the output data from the cache and at the same time copies next page to the data regsiter
@@ -696,7 +749,7 @@ void read_page_cache_sequential(uint8_t* address, uint8_t address_length,uint8_t
 		tRR;
 
 		*data_read_len = 8192;
-		get_data(data_read+(page_num*(*data_read_len)),*data_read_len);
+		get_data_fast(data_read+(page_num*(*data_read_len)),*data_read_len);
 	}	
 
 	// read page cache last
@@ -710,7 +763,7 @@ void read_page_cache_sequential(uint8_t* address, uint8_t address_length,uint8_t
 	tRR;
 
 	*data_read_len = 8192;
-	get_data(data_read+((num_pages-1)*(*data_read_len)),*data_read_len);
+	get_data_fast(data_read+((num_pages-1)*(*data_read_len)),*data_read_len);
 }
 
 // enables data output for the last selected die and cache register
