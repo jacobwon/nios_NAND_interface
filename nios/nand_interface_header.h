@@ -170,6 +170,9 @@ void send_data(uint8_t* data_to_send,uint16_t num_data);
 // .. .. data is available at DQ pins on the falling edge of RE pin (RE is also input to NAND)
 void get_data(uint8_t* data_received,uint16_t num_data);
 
+// .. .. data is available at DQ pins on the falling edge of RE pin (RE is also input to NAND)
+void get_data_fast(uint8_t* data_received,uint16_t num_data);
+
 // function to disable Program and Erase operation
 // .. when WP is low, program and erase operation are disabled
 // .. when WP is high, program and erase operation are enabled
