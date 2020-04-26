@@ -283,4 +283,6 @@ void program_page_cache(uint8_t* address,uint8_t* data,uint16_t num_data,uint8_t
 
 void erase_block(uint8_t* row_address);
 
+void partial_erase_block(uint8_t* row_address, uint8_t lp_cnt);
+
 #endif

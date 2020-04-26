@@ -132,5 +132,63 @@ int main()
 	get_data(data_received,100);
 	print_array(data_received,100);
 
+	uint8_t lp_cnt = 100;
+
+	for(;lp_cnt<=200;lp_cnt+=1)
+	{
+		printf("Partial Erase operation with lp_cnt = %d\n",lp_cnt);
+		// here, let us do partial erase operation
+		printf(" 6* Partial erasing address (address in reverse order:)");
+		print_array(my_page_address2+2,5);
+		enable_erase();
+		partial_erase_block(my_page_address2+2,lp_cnt);
+		disable_erase();
+		// now read the erased page, should be 0xffs
+		read_page(my_page_address2,5);
+		change_read_column(new_col);
+		get_data(data_received,100);
+		print_array(data_received,100);
+
+		// let us erase the block
+		printf(" 7* Partial erasing address (address in reverse order:)");
+		print_array(my_page_address+2,3);
+		enable_erase();
+		partial_erase_block(my_page_address+2,lp_cnt);
+		disable_erase();
+
+		// now read the erased page, should be 0xffs
+		read_page(my_page_address,5);
+		change_read_column(new_col);
+		get_data(data_received,100);
+		print_array(data_received,100);
+		
+	}
+	// let us erase the block
+	printf(" 8* Erasing address (address in reverse order:)");
+	print_array(my_page_address2+2,3);
+	enable_erase();
+	erase_block(my_page_address2+2);
+	disable_erase();
+
+	// now read the erased page, should be 0xffs
+	read_page(my_page_address2,5);
+	change_read_column(new_col);
+	get_data(data_received,100);
+	print_array(data_received,100);
+
+
+	// let us erase the block
+	printf(" 8* Erasing address (address in reverse order:)");
+	print_array(my_page_address+2,3);
+	enable_erase();
+	erase_block(my_page_address+2);
+	disable_erase();
+
+	// now read the erased page, should be 0xffs
+	read_page(my_page_address,5);
+	change_read_column(new_col);
+	get_data(data_received,100);
+	print_array(data_received,100);
+
 	return 0;
 }

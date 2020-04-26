@@ -917,3 +917,51 @@ printf("Erase Operation Successful\n");
 #endif
 	}
 }
+
+// following is the partial erase operation function
+void partial_erase_block(uint8_t* row_address, uint8_t lp_cnt)
+{	
+	*jumper_direction &= ~RB_mask;
+
+	// check if it is out of Busy cycle
+	while((*jumper_address & RB_mask)==0);
+
+	send_command(0x60);
+	send_addresses(row_address,3);
+#if TIMER_PROFILE
+	printf("Partial Erase Block Operation Follows\n");
+	timer_start();
+#endif
+	send_command(0xd0);
+
+	tWB;
+
+	for(;lp_cnt>=1;lp_cnt--);
+
+	// let us issue reset command here
+	send_command(0xff);
+	
+#if DEBUG
+	printf("Inside Erase Fn: Address is: ");
+	print_array(row_address,3);
+#endif
+
+	// check if it is out of Busy cycle
+	while((*jumper_address & RB_mask)==0);
+#if TIMER_PROFILE
+	PRINT_CC_TAKEN;
+#endif	
+
+	// let us read the status register value
+	uint8_t status;
+	read_status(&status);	
+	if(status&0x01)
+	{
+		printf("Failed Erase Operation\n");
+	}else
+	{
+#if DEBUG
+printf("Erase Operation Successful\n");
+#endif
+	}
+}
