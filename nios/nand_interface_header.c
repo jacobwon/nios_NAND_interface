@@ -937,6 +937,10 @@ void partial_erase_block(uint8_t* row_address, uint8_t lp_cnt)
 	tWB;
 
 	for(;lp_cnt>=1;lp_cnt--);
+		
+#if TIMER_PROFILE
+	PRINT_CC_TAKEN;
+#endif	
 
 	// let us issue reset command here
 	send_command(0xff);
@@ -948,9 +952,6 @@ void partial_erase_block(uint8_t* row_address, uint8_t lp_cnt)
 
 	// check if it is out of Busy cycle
 	while((*jumper_address & RB_mask)==0);
-#if TIMER_PROFILE
-	PRINT_CC_TAKEN;
-#endif	
 
 	// let us read the status register value
 	uint8_t status;
