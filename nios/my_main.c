@@ -134,7 +134,7 @@ int main()
 
 	uint8_t lp_cnt = 100;
 
-	for(;lp_cnt<=160;lp_cnt+=1)
+	for(;lp_cnt<=125;lp_cnt+=1)
 	{
 		printf("Partial Erase operation with lp_cnt = %d\n",lp_cnt);
 		// here, let us do partial erase operation
