@@ -22,7 +22,7 @@ void check_status()
 
 // function to send an arbitrary command signal to the NAND device
 // .. the procedure is as follows ( in the sequence )
-void send_command(uint8_t command_to_send)
+FORCE_INLINE inline void send_command(uint8_t command_to_send)
 {
 	// set the required pins as output from the angle of NIOS machine
 	*jumper_direction |= 0x03fff;
@@ -70,7 +70,7 @@ void send_command(uint8_t command_to_send)
 
 // function to send address to the NAND device 
 // .. the procedure is as follows (in the sequence)
-void send_addresses(uint8_t* address_to_send, uint8_t num_address_bytes)
+FORCE_INLINE inline void send_addresses(uint8_t* address_to_send, uint8_t num_address_bytes)
 {
 	// set the required pins as output
 	*jumper_direction |= 0x03fff;
@@ -125,7 +125,7 @@ void send_addresses(uint8_t* address_to_send, uint8_t num_address_bytes)
 
 // function to send address to the NAND device 
 // .. the procedure is as follows (in the sequence)
-void send_address(uint8_t address_to_send)
+FORCE_INLINE inline void send_address(uint8_t address_to_send)
 {
 	// set the required pins as output
 	*jumper_direction |= 0x03fff;
@@ -170,7 +170,7 @@ void send_address(uint8_t address_to_send)
 // function to send address from the host machine to the NAND flash
 // .. Data is written from DQ[7:0] to the cache register of the selected die (LUN)
 // .. .. on the rising edge of WE# when CE# is LOW, ALE is LOW, CLE is LOW, and RE# is HIGH
-void send_data(uint8_t* data_to_send,uint16_t num_data)
+FORCE_INLINE inline void send_data(uint8_t* data_to_send,uint16_t num_data)
 {
 	// .. CE should be low
 	*jumper_address &= ~CE_mask;
