@@ -969,8 +969,90 @@ printf("Erase Operation Successful\n");
 
 void timing_test(uint8_t t_count)
 {
+	static uint32_t cc_val_old = 0;
+	uint32_t cc_val_new = 0;
 	printf("\nProfiling time take by for loop with %d count\n",t_count);
 	timer_start();
 	for(;t_count>=1;t_count--);
+	cc_val_new = timer_diff();
+	printf(".. the last operation took %lu cc, +%lu from previous\n", cc_val_new,cc_val_new-cc_val_old);
+	cc_val_old = cc_val_new;
+}
+
+void timing_test_0nop()
+{
+	printf("At 0 nops, ");
+	timer_start();
+	PRINT_CC_TAKEN;
+}
+void timing_test_1nop()
+{
+	printf("At 1 nops, ");
+	timer_start();
+	asm("nop");
+	PRINT_CC_TAKEN;
+}
+
+void timing_test_2nop()
+{
+	printf("At 2 nops, ");
+	timer_start();
+	asm("nop");
+	asm("nop");
+	PRINT_CC_TAKEN;
+}
+void timing_test_3nop()
+{
+	printf("At 3 nops, ");
+	timer_start();
+	asm("nop");
+	asm("nop");
+	asm("nop");
+	PRINT_CC_TAKEN;
+}
+void timing_test_4nop()
+{
+	printf("At 4 nops, ");
+	timer_start();
+	asm("nop");
+	asm("nop");
+	asm("nop");
+	asm("nop");
+	PRINT_CC_TAKEN;
+}
+void timing_test_5nop()
+{
+	printf("At 5 nops, ");
+	timer_start();
+	asm("nop");
+	asm("nop");
+	asm("nop");
+	asm("nop");
+	asm("nop");
+	PRINT_CC_TAKEN;
+}
+void timing_test_6nop()
+{
+	printf("At 6 nops, ");
+	timer_start();
+	asm("nop");
+	asm("nop");
+	asm("nop");
+	asm("nop");
+	asm("nop");
+	asm("nop");
+	PRINT_CC_TAKEN;
+}
+void timing_test_7nop()
+{
+	printf("At 7 nops, ");
+	timer_start();
+	asm("nop");
+	asm("nop");
+	asm("nop");
+	asm("nop");
+	asm("nop");
+	asm("nop");
+	asm("nop");
 	PRINT_CC_TAKEN;
 }

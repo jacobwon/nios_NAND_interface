@@ -36,7 +36,7 @@ Description: This file has the essential functions that are needed for interfaci
 // .. timer counter snapshot high (only 16-bits)
 #define TIMER_COUNTER_SNAP_HIGH ((uint32_t*) 0xff202014)
 // .. instead of making call to timer_diff(), use the following statement
-#define PRINT_CC_TAKEN printf(".. the last operation took %lu cc\n.",timer_diff())
+#define PRINT_CC_TAKEN printf(".. the last operation took %lu cc.\n",timer_diff())
 
 // function timer_start()
 // .. following function starts the timer in downwards direction
@@ -286,5 +286,14 @@ void erase_block(uint8_t* row_address);
 void partial_erase_block(uint8_t* row_address, uint8_t lp_cnt);
 
 void timing_test(uint8_t t_count);
+
+void timing_test_0nop();
+void timing_test_1nop();
+void timing_test_2nop();
+void timing_test_3nop();
+void timing_test_4nop();
+void timing_test_5nop();
+void timing_test_6nop();
+void timing_test_7nop();
 
 #endif
