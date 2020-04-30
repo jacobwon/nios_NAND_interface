@@ -938,12 +938,11 @@ void partial_erase_block(uint8_t* row_address, uint8_t lp_cnt)
 
 	for(;lp_cnt>=1;lp_cnt--);
 		
-#if TIMER_PROFILE
-	PRINT_CC_TAKEN;
-#endif	
-
 	// let us issue reset command here
 	send_command(0xff);
+#if TIMER_PROFILE
+	PRINT_CC_TAKEN;
+#endif
 	
 #if DEBUG
 	printf("Inside Erase Fn: Address is: ");
@@ -965,4 +964,13 @@ void partial_erase_block(uint8_t* row_address, uint8_t lp_cnt)
 printf("Erase Operation Successful\n");
 #endif
 	}
+}
+
+
+void timing_test(uint8_t t_count)
+{
+	printf("\nProfiling time take by for loop with %d count\n",t_count);
+	timer_start();
+	for(;t_count>=1;t_count--);
+	PRINT_CC_TAKEN;
 }
