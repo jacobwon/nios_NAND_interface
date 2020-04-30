@@ -285,4 +285,6 @@ void erase_block(uint8_t* row_address);
 
 void partial_erase_block(uint8_t* row_address, uint8_t lp_cnt);
 
+void timing_test(uint8_t t_count);
+
 #endif
