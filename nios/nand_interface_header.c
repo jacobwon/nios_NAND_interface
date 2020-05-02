@@ -983,14 +983,14 @@ void timing_test_0nop()
 {
 	printf("At 0 nops, ");
 	timer_start();
-	PRINT_CC_TAKEN;
+	STOP_PRINT_CC_TAKEN;
 }
 void timing_test_1nop()
 {
 	printf("At 1 nops, ");
 	timer_start();
 	asm("nop");
-	PRINT_CC_TAKEN;
+	STOP_PRINT_CC_TAKEN;
 }
 
 void timing_test_2nop()
@@ -999,7 +999,7 @@ void timing_test_2nop()
 	timer_start();
 	asm("nop");
 	asm("nop");
-	PRINT_CC_TAKEN;
+	STOP_PRINT_CC_TAKEN;
 }
 void timing_test_3nop()
 {
@@ -1008,7 +1008,7 @@ void timing_test_3nop()
 	asm("nop");
 	asm("nop");
 	asm("nop");
-	PRINT_CC_TAKEN;
+	STOP_PRINT_CC_TAKEN;
 }
 void timing_test_4nop()
 {
@@ -1018,7 +1018,7 @@ void timing_test_4nop()
 	asm("nop");
 	asm("nop");
 	asm("nop");
-	PRINT_CC_TAKEN;
+	STOP_PRINT_CC_TAKEN;
 }
 void timing_test_5nop()
 {
@@ -1029,7 +1029,7 @@ void timing_test_5nop()
 	asm("nop");
 	asm("nop");
 	asm("nop");
-	PRINT_CC_TAKEN;
+	STOP_PRINT_CC_TAKEN;
 }
 void timing_test_6nop()
 {
@@ -1041,7 +1041,7 @@ void timing_test_6nop()
 	asm("nop");
 	asm("nop");
 	asm("nop");
-	PRINT_CC_TAKEN;
+	STOP_PRINT_CC_TAKEN;
 }
 void timing_test_7nop()
 {
@@ -1054,5 +1054,5 @@ void timing_test_7nop()
 	asm("nop");
 	asm("nop");
 	asm("nop");
-	PRINT_CC_TAKEN;
+	STOP_PRINT_CC_TAKEN;
 }

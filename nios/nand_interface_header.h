@@ -38,6 +38,11 @@ Description: This file has the essential functions that are needed for interfaci
 // .. instead of making call to timer_diff(), use the following statement
 #define PRINT_CC_TAKEN printf(".. the last operation took %lu cc.\n",timer_diff())
 
+#define STOP_PRINT_CC_TAKEN {\
+								uint32_t clock_count = timer_diff();\
+								printf(".. the last operation took %lu cc.\n",clock_count);\
+							}
+
 // function timer_start()
 // .. following function starts the timer in downwards direction
 // .. that means we will have max values in the counter and count downwards
