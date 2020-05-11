@@ -58,7 +58,8 @@ FORCE_INLINE inline void send_command(uint8_t command_to_send)
 	//insert delay here
 	// .. because the command is written on the rising edge of WE
 	// tDH = 20 ns
-	HOLD_TIME;
+	// HOLD_TIME;
+	asm("nop");
 
 	// disable CLE
 	*jumper_address &= ~(CLE_mask);
@@ -111,7 +112,7 @@ FORCE_INLINE inline void send_addresses(uint8_t* address_to_send, uint8_t num_ad
 		// .. address expected is 5-bytes ColAdd1, ColAdd2, RowAdd1, RowAdd2, RowAdd3
 		
 		//insert delay here
-		HOLD_TIME;	// tDH
+		asm("nop");	// tDH
 	}
 	// .. ALE goes low
 	*jumper_address &=  ~(ALE_mask);
@@ -196,7 +197,8 @@ FORCE_INLINE inline void send_data(uint8_t* data_to_send,uint16_t num_data)
 		*jumper_address |= WE_mask;
 
 		//insert delay here
-		HOLD_TIME;	//tDH
+		// HOLD_TIME;	//tDH
+		asm("nop");
 
 		// reset all the data on DQ pins
 		// .. this might be unnecesary
@@ -233,20 +235,17 @@ void get_data(uint8_t* data_received,uint16_t num_data)
 		// set the RE to low for next cycle
 		*jumper_address &= ~RE_mask;
 
-		// tRP = 50ns
+		// tREA = 40ns
 		SAMPLE_TIME;
-		asm("nop");
+
+		// read the data
+		data_received[i] = *jumper_address & DQ_mask;
 
 		// .. data is available at DQ pins on the rising edge of RE pin (RE is also input to NAND)
 		*jumper_address |= RE_mask;
 		
-		//insert delay here
-		// .. tREH = 30 ns
-		asm("nop");
-
-		// read the data
-		data_received[i] = *jumper_address & DQ_mask;
-		asm("nop");
+		// tREH
+		asm("nop"); // same same 
 	}
 
 	// set the pins as output
@@ -372,7 +371,7 @@ void device_initialization()
 	*jumper_direction |= 0x3fff;
 
 	//insert delay here
-	for(uint16_t i=0;i<5000;i++);	//50 us max
+	for(uint16_t i=0;i<900;i++);	//50 us max
 
 	// wait for R/B signal to go high
 	while((*jumper_address & RB_mask)==0);
@@ -608,7 +607,6 @@ void read_status(uint8_t* status_value)
 	//insert delay here
 	// .. tWHR= 120ns
 	tWHR;
-
 	get_data(status_value,1);
 }
 
@@ -781,7 +779,6 @@ void read_mode()
 // .. address: should be 5 bytes and data should be 
 void program_page(uint8_t* address,uint8_t* data,uint16_t num_data)
 {
-	// 
 	send_command(0x80);
 	send_addresses(address,5);
 
@@ -793,6 +790,7 @@ void program_page(uint8_t* address,uint8_t* data,uint16_t num_data)
 	printf("Program Page Operation Follows\n");
 	timer_start();
 #endif
+	timer_start();
 	send_command(0x10);
 
 	tWB;
@@ -803,6 +801,7 @@ void program_page(uint8_t* address,uint8_t* data,uint16_t num_data)
 #endif
 	// check if it is out of Busy cycle
 	while((*jumper_address & RB_mask)==0);
+	STOP_PRINT_CC_TAKEN;
 #if TIMER_PROFILE
 	PRINT_CC_TAKEN;
 #endif	

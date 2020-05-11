@@ -21,7 +21,7 @@ Description: This file has the essential functions that are needed for interfaci
 // set the following variable to true if you want to following functions:
 // .. timer_start()
 // .. timer_end()
-#define TIMER_PROFILE true
+#define TIMER_PROFILE false
 // following are the registers in NIOS computer
 // .. the base address
 #define TIMER_BASE ((uint32_t*) 0xff202000)
@@ -115,11 +115,11 @@ FORCE_INLINE inline  uint32_t timer_diff()
 #define RB_mask (0x1<<RB_shift) // connected to D14
 
 
-#define SAMPLE_TIME asm("nop");asm("nop");asm("nop")
-#define HOLD_TIME asm("nop");asm("nop");asm("nop");asm("nop");asm("nop")
+#define SAMPLE_TIME asm("nop");asm("nop")
+#define HOLD_TIME {asm("nop");}
 // 100ns
 #define tWW asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop")
-#define tWB {for(uint8_t i=0;i<20;i++) asm("nop");}
+#define tWB {asm("nop"); asm("nop");}
 #define tRR {for(uint8_t i=0;i<4;i++) asm("nop");}
 #define tRHW tWB
 #define tCCS tWB
