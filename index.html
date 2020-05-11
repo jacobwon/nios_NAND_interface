@@ -156,6 +156,9 @@
 		<p>
 			THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		</p>
+		<p>
+			Flash Chip MT29F64G08CBABA and datasheet are property of Micron Technology, Inc.
+		</p>
 	</div>
 	<hr>
 	<hr>
@@ -361,7 +364,7 @@
 		<div>
 			<ul>
 				<li>
-					The function <i>get_data()</i> is not implemented as an inline function.
+					The function <i>get_data()</i> is not implemented as an inline function. This function reads the data from the cache of NAND and stores in a buffer.
 				</li>
 				<li>
 					In the function, we first change the direction of the pins to condition them to receive data bytes. This function actually acquires the content of the cache and spits them out one byte at a time to the data pins.
@@ -381,6 +384,9 @@
 				</li>
 				<li>
 					The same function is also used for checking status from the status register. While erase operation, the <i>get_data()</i> with 1 byte to read costs on average of (OutTime) 1065 cc (10650 ns = 10 us) while for page program operation, the OutTime is 917 cc (9170 ns = 9.17 us).
+				</li>
+				<li>
+					<b>The datasheet mentions maximum of 50MT/s (50x10^6 transfers/seconds)</b>
 				</li>
 			</ul>
 		</div>
@@ -412,6 +418,11 @@
 				<li>
 					OutTime measurement of erase block is measured as 174515 cc (1745150 ns = 1.74 ms).
 				</li>
+				<li>
+					<b>
+						The datasheet mentions erase block time at 3ms.
+					</b>
+				</li>
 			</ul>
 		</div>
 		<hr>
@@ -437,8 +448,35 @@
 				<li>
 					InTime measurement for a page program including the <i>send_data()</i> for 8192 bytes is 2889031 cc (28890310 ns = 28.90 ms). Time time for program operation after the last command sequence, however, is measured as 107834 cc (1078340 ns = 1.08 ms).
 				</li>
+				<li>
+					<b>The datasheet mentions the program page time at 1300 us.</b>
+				</li>
 			</ul>
 		</div>
+		<hr>
+		<button type="button" class="collapsible"> <i>Read Page</i></button>
+		<div>
+			<ul>
+				<li>
+					Read page operation to transfer data from the NAND memory to the cache is implemented in function <i>read_page()</i>.
+				</li>
+				<li>
+					Following is the diagram that shows the timing nature of the operation:
+				</li>
+				<img src="images/9_readpage.PNG" class= "center">
+				<li>
+					Our time measurement including the time to send the command and the page address from inside the <i>read_page()</i> function is observed on average at 52622 cc (InTime = 526220 ns ie 526 us).
+				</li>
+				<li>
+					The time measured after the issuing the last command byte is 48996 cc ( 489960 ns = 490 us).
+				</li>
+				<li>
+					<b>The datasheet mentions the read page time at 100us.</b>
+				</li>
+			</ul>
+		</div>
+<hr>
+<hr>
 
 	<h1>Code API</h1>
 	<p>

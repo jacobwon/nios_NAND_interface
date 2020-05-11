@@ -705,13 +705,14 @@ void read_page(uint8_t* address,uint8_t address_length)
 
 	// just a delay
 	tWB;
+
 	// check for RDY signal
 	while((*jumper_address & RB_mask)==0);
 #if TIMER_PROFILE
 	PRINT_CC_TAKEN;
 #endif	
 	// tRR = 40ns
-	tRR;
+	asm("nop");
 }
 
 
@@ -790,7 +791,6 @@ void program_page(uint8_t* address,uint8_t* data,uint16_t num_data)
 	printf("Program Page Operation Follows\n");
 	timer_start();
 #endif
-	timer_start();
 	send_command(0x10);
 
 	tWB;
@@ -801,7 +801,6 @@ void program_page(uint8_t* address,uint8_t* data,uint16_t num_data)
 #endif
 	// check if it is out of Busy cycle
 	while((*jumper_address & RB_mask)==0);
-	STOP_PRINT_CC_TAKEN;
 #if TIMER_PROFILE
 	PRINT_CC_TAKEN;
 #endif	
