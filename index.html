@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>NIOS NAND Interface: Documentation</title>
+	<title>ONFI NIOS NAND Interface</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<style>
 	.collapsible {
@@ -20,6 +20,13 @@
 	  background-color: #555;
 	}
 
+	.center {
+	  display: block;
+	  margin-left: auto;
+	  margin-right: auto;
+	  width: 50%;
+	}
+
 	.content {
 	  padding: 0 18px;
 	  display: none;
@@ -30,17 +37,21 @@
 </head>
 
 <body style="background-color: #f1f1f1;padding: 0 18px;">
-	<h1 align="center">ONFI 2.2 NAND Flash Interface with NIOS Computer</h1>
+	<h1 align="center">Documentation of NAND Interface @ UAH</h1>
 	<p align="center">Prawar Poudel</p>
-<hr>
+	<!-- MT29F64G08CBABA -->
+	<hr>
+	<hr>
+
 	<h1>Introduction</h1>
+	<hr>
 	<button type="button" class="collapsible"> <i>Preliminary</i></button>
 		<div class="content">
 			<p>
 				NAND flash memory is extensively used for mass storage purpose. They have found their usage in SSDs., memory cards and are also used in almost all the gadgets in todays electronic ecosystem. A number of research focused on NAND memory or flash memory in general are performed focusing primarily in using these memory for security purposes, securing data, making efficient storage strategy etc.
 			</p>
 			<p>
-				In this research, we present an interface to the NAND memory, specifically flash memory that is compliant to Open NAND Flash Interface (ONFI 2.2). The flash memory is interfaced to NIOS computer system. The NIOS computer system is implemented in DE1-SoC where the computer runs at 100Mhz frequency. Most of the research work presented for NAND flash memory do not reveal the interface they use or it just seems the interface frequency is a bottleneck in the system. Thus we wanted to create infrastructure for anyone interested such that they can modify the content presented here as their own need.
+				In this research, we present an interface to the NAND memory, specifically flash memory that is compliant to Open NAND Flash Interface (ONFI 2.3). The flash memory is interfaced to NIOS computer system. The NIOS computer system is implemented in DE1-SoC where the computer runs at 100Mhz frequency. Most of the research work presented for NAND flash memory do not reveal the interface they use or it just seems the interface frequency is a bottleneck in the system. Thus we wanted to create infrastructure for anyone interested such that they can modify the content presented here as their own need.
 			</p>
 			<p>
 				Technical requirments are:
@@ -59,7 +70,78 @@
 				</ul>
 			</p>
 		</div>
+	<hr>
 
+	<button type="button" class="collapsible"> <i>What This Document is?</i></button>
+	<div>
+		<p>
+			This document presents a simulatenous discription and observation made from the code that has been written for MT29F64G08CBABA. MT29F64G08CBABA is a flash memory manufactured by Micron Inc. In addition we will make a comparison with the timings expected from the datasheet as well. Although the obesrvations presented are particular to this device, the fundamentals should be same for similar devices.
+		</p>
+		<p>
+			The code implementation can be found at <a href="https://github.com/sickRanchez-c137/nios_NAND_interface">this link</a>.
+		</p>
+		<p>
+			The initial API documentation can be found at <a href="https://sickranchez-c137.github.io/nios_NAND_interface/">this link</a>.
+		</p>
+		<p>
+			Following are some of the interesting details of this particular flash memory.
+			<ul>
+				<li>It is NAND flash memory.</li>
+				<li>It is ONFI 2.3 compliant.</li>
+				<li>It is based on MLC technology.</li>
+				<li>It has 48-Pin TSOP package.</li>
+				<li>The chip is 64 GBits</li>
+				<ul>
+					<li>It has 4096 blocks.</li>
+					<li>It has 2 planes.</li>
+					<li>Each plane has 2048 blocks.</li>
+					<li>Each block has 256 pages. (2048K+186K bytes)</li>
+					<li>Each page is 8192 bytes. (8192 bytes+ 744 bytes)</li>
+				</ul>
+			</ul>
+			Following are some of the information on the set-up that we are using:
+			<ul>
+				<li>The microcontroller used is NIOS-II computer system implemented on DE1-SoC.</li>
+				<li>The processor runs at 100Mhz.</li>
+			</ul>
+		</p>
+	<hr>
+	<hr>
+
+		<h1>Instrumenting Flash Operations</h1>
+		<hr>
+		<p>
+			In the following section we will analyze the timing characteristics of the different implemented functions in our firmware. Each of the mesurement is made by adding the <i>timer_start()</i> function and <i>STOP_PRINT_CC_TAKEN</i> macro at the beginning and at the end of the function inside the function. This should give the number of clock cycles taken by the function to execute excluding the time taken to initialize stact and jump execution to the function. Thus, this time is called <i>InTime (Ti)</i>.
+		</p>
+		<p>
+			Just placing these two instrumenting codes consumes 9cc.
+			<pre>
+				<code>
+					timer_start();	//start timer (inline function)
+					STOP_PRINT_CC_TAKEN; // macro that captures timer value and prints cc taken
+				</code>
+				They consume 9cc.
+			</pre>
+		</p>
+		<p>
+			Another measurement is made for each of the function where the function call <i>timer_start()</i> is placed before the function call of the function to be measured. After the function returns, the macro <i>STOP_PRINT_CC_TAKEN</i> is placed. This should include the time required to setup stack, jump execution as well as the actual function operation. We call this time <i>OutTime (To)</i>.
+		</p>
+		<p>
+			The instrumentation code <i>timer_start()</i> and <i>STOP_PRINT_CC_TAKEN</i> are removed from the code after their need is finished.
+		</p>
+		<hr>
+		<hr>
+		Some Important Observations made are as follows:
+		<ul>
+			<li>
+				Each instruction that updates the state of a pin (interfaced to the NAND chip) on average takes 86 cc (860 ns).
+			</li>
+			<li>
+				Instrumenting code consumes 9cc. Thus all the time measurements presented in clock cycles should be subtracted with 9cc for accurate value.
+			</li>
+		</ul>
+	</div>
+	<hr>
 	<button type="button" class="collapsible"> <i>Copyright</i></button>
 		<div class="content">
 		<p>
@@ -75,8 +157,11 @@
 			THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		</p>
 	</div>
-<hr>
+	<hr>
+	<hr>
+
 	<h1>Technical Details</h1>
+	<hr>
 		<button type="button" class="collapsible">Computer System</button>
 		<div class="content">
 			<p>
@@ -108,1202 +193,254 @@
 				Other pins that are used for our case are indicated by the <i>mask</i> values in the header file. Please refer to the header file before porting the code for your purpose. You may need to change the code as necessary.
 			</p>
 		</div>
-<hr>
-		<button type="button" class="collapsible">Time Measurement Code</button>
-		<div class="content">
-			<p>
-				The interval timer in NIOS computer is used for profiling time. Any user can make use of the preprocessor directives as defined below to make their own profiling. In NIOS, the interval timer can be found at address 0xff202004 and other required registers are subsequently placed.
-			</p>
-		<pre>
-			<code>
-				
-				// following are the registers in NIOS computer
-				// .. the base address
-				#define TIMER_BASE ((uint32_t*) 0xff202000)
-				// .. the control register
-				#define TIMER_CONTROL ((uint32_t*) 0xff202004)
-				// .. timer counter low (only 16-bits)
-				#define TIMER_COUNTER_LOW ((uint32_t*) 0xff202008)
-				// .. timer counter high (only 16-bits)
-				#define TIMER_COUNTER_HIGH ((uint32_t*) 0xff20200C)
-				// .. timer counter snapshot low (only 16-bits)
-				#define TIMER_COUNTER_SNAP_LOW ((uint32_t*) 0xff202010)
-				// .. timer counter snapshot high (only 16-bits)
-				#define TIMER_COUNTER_SNAP_HIGH ((uint32_t*) 0xff202014)
-				// .. instead of making call to timer_diff(), use the following statement
-				#define PRINT_CC_TAKEN printf(".. the last operation took %lu cc\n.",timer_diff())
 
-				// function timer_start()
-				// .. following function starts the timer in downwards direction
-				// .. that means we will have max values in the counter and count downwards
-				FORCE_INLINE inline void timer_start()
-				{
-					*TIMER_COUNTER_LOW = 0xffff;
-					*TIMER_COUNTER_HIGH = 0xffff;
-					// .. bit 0: interupt enable, bit 1: continuous mode, bit 2:start counting
-					*TIMER_CONTROL = 0x006; //0b0110
-				}
+	<hr>
+	<hr>
 
-				// function timer_end()
-				// .. following function takes the snapshot from the counter and puts them in snap register
-				// .. do not make a call to this function from user code, see timer_diff instead
-				FORCE_INLINE inline void timer_end()
-				{
-					// grab the snap shot value
-					// .. to catch the snapshot value, just write anything to the snap register
-					*TIMER_COUNTER_SNAP_LOW = 1;
-					// now we can stop the timer
-					// .. bit 3 is STOP
-					*TIMER_CONTROL = 0x08;
-				}
-
-				// function timer_diff
-				// .. this function gives out the time in nanoseconds as measured by the timer
-				FORCE_INLINE inline  uint32_t timer_diff()
-				{
-					// first stop the timer
-					timer_end();
-					// the initial value that we started was 0xff ff ff ff ff
-					uint32_t clock_count = 0xffffffff-((*TIMER_COUNTER_SNAP_HIGH)*65536+(*TIMER_COUNTER_SNAP_LOW)); // in cc
-					return clock_count;
-				}
-			</code>
-		</pre>
-		<p>
-			An example of the code snippet that measures the time taken by erase operation is shown below:
-		</p>
-		<pre>
-			<code>				
-				#if TIMER_PROFILE
-					printf("Erase Block Operation Follows\n");
-					timer_start();
-				#endif
-					erase_block(my_page_address+2);
-				#if TIMER_PROFILE
-					PRINT_CC_TAKEN;
-				#endif	
-			</code>
-		</pre>
+	<h1>Performance Analysis</h1>
+	<hr>
+	<button type="button" class="collapsible"> <i>Device Initialization</i></button>
+		<div>
+			<ul>
+				<li>
+					Device Initialization function is the first function that is to be called when starting the NAND flash device. This function sets the pin direction appropriately such that only the pin R/B# is set as input for the microcontroller.
+				</li>
+				<li>
+					We must wait for 50 microseconds as indicated in the datasheet. This 50us should be from the start of the supply power application (ie voltage ramp).
+				</li>
+				<li>
+					Following diagram for device initialization is obtained from the device manual.
+				</li>
+				<img src="images/1_deviceinit.PNG" class="center">
+				<li>
+					After waiting appropriately, we start probing the RB# signal to see if the NAND flash chip is ready. This will be indicated by a logic 1 at the RB pin which we test using a while loop.
+				</li>
+				<li>
+					After the RB# is high, we will send a reset signal to the device.
+				</li>
+				<li>
+					Measurement OutTime = 51901 cc (519010 ns when called from main function)
+				</li>
+				<li>
+					Measurement InTime = 51866 cc (518660 ns)
+				</li>
+				<li>
+					The <i>for</i> loop in the code designed for delay consumes 50535 cc (505350 ns = 50.5 us).
+				</li>
+				<li>
+					After the delay is finished, the <i>while</i> loop that probes the RB# signal waits for about 73 cc (730 ns)
+				</li>
+				<li>
+					The call to reset device function is made after the <i>while</i> loop. This function call consumes 1132 cc (11320 ns)
+				</li>
+			</ul>
 		</div>
-<hr>
-	<h1>Time Profile of Operations</h1>
-		<p>
-			The above data are measuring the internal times that the flash takes for each of the operations listed. This means from when the last command to initiate the erase, program and read operation were issued.
-		</p>
-		<button type="button" class="collapsible"> Erase Profile </button>
-			<div class="content">
-				<p>Based on the measurement, the erase operation of two blocks of flash memory each took:</p>
-				<ul>
-					<li>167701 cc (i.e. 1677010 ns)</li>
-					<li>167437 cc (i.e. 1674370 ns)</li>
-				</ul>
-				<p>Based on this measurement, the erase time of a block is 1.67 ms (~3 ms in Datasheet).</p>
-			</div>
-<hr>
-		<button type="button" class="collapsible"> Program Profile </button>
-			<div class="content">
-				<p>Based on the measurement, the program operation of two pages of flash memory each took:</p>
-				<ul>
-					<li>105181 cc (i.e. 1051810 ns)</li>
-					<li>101285 cc (i.e. 1012850 ns)</li>
-				</ul>
-				<p>Based on this measurement, the program time of a page is 1.0 ms (~1.3 ms in Datasheet).</p>
-			</div>
-<hr>
-		<button type="button" class="collapsible"> Page Read Profile </button>
-			<div class="content">
-				<p>Based on the measurement, the page read operation of many rows of flash memory each took:</p>
-				<ul>
-					<li>45753 cc (i.e. 457530 ns)</li>
-					<li>46073 cc (i.e. 460730 ns)</li>
-					<li>46153 cc (i.e. 461530 ns)</li>
-					<li>47177 cc (i.e. 471770 ns)</li>
-					<li>45218 cc (i.e. 452180 ns)</li>
-					<li>45560 cc (i.e. 455600 ns)</li>
-				</ul>
-				<p>Based on this measurement, the program time of a row is 460 us (~100 us in Datasheet).</p>
-			</div>
-<hr>
-		<p>
-			Following are the observation including the latching of all the command bytes. If there are multiple bytes to be sent, for example for program operation 8192 data bytes are needed, the time to send this is also included.
-		</p>
-		<button type="button" class="collapsible"> Erase Profile Inclusive</button>
-			<div class="content">
-				<p>Based on the measurement, the erase operation of two blocks of flash memory each took:</p>
-				<ul>
-					<li>182971 cc (i.e. 1829710 ns)</li>
-					<li>184343 cc (i.e. 1843430 ns)</li>
-				</ul>
-				<p>Based on this measurement, the erase time of a block is 1.8 ms (~3 ms in Datasheet).</p>
-			</div>
-<hr>
-		<button type="button" class="collapsible"> Program Profile Inclusive</button>
-			<div class="content">
-				<p>Based on the measurement, the program operation of two pages of flash memory each took:</p>
-				<ul>
-					<li>2969778 cc (i.e. 29697780 ns)</li>
-					<li>2963443 cc (i.e. 29634430 ns)</li>
-				</ul>
-				<p>Based on this measurement, the program time of a page is 29.6 ms (~1.3 ms in Datasheet).</p>
-			</div>
-<hr>
-		<button type="button" class="collapsible"> Page Read Profile Inclusive</button>
-			<div class="content">
-				<p>Based on the measurement, the page read operation of many rows of flash memory each took:</p>
-				<ul>
-					<li>59469 cc (i.e. 594690 ns)</li>
-					<li>58463 cc (i.e. 584630 ns)</li>
-					<li>59197 cc (i.e. 591970 ns)</li>
-					<li>62134 cc (i.e. 621340 ns)</li>
-					<li>59037 cc (i.e. 590370 ns)</li>
-					<li>59030 cc (i.e. 590300 ns)</li>
-				</ul>
-				<p>Based on this measurement, the program time of a row is 590 us (~100 us in Datasheet).</p>
-			</div>
-<hr>			
-	<h1>Code API</h1>
-		<p>
-			In the following section we will present the description of different functions that are implemented. All these functions are derived from the datasheet of the Micron NAND flash device MT29F64G08CBABA. It should be compliant of ONFI 2.2 standard.
-		</p>
-
-		<button type="button" class="collapsible"> <i>Macro Definitions</i></button>
-		<div class="content">
-		<pre>
-			<code>
-				// The computer system used here is DE1_SoC that runs at 100Mhz (10 ns period)
-				//  connection to the NAND is made in parallel port 1 on JP1
-				// .. the address of which is at 0xff200060
-				// .. so here we will create masks for the data to be read/written
-				#define JUMPER_LOCATION ((uint32_t*) 0xff200060)
-
-				// value 1 in direction register means output
-				// .. 0 means input
-				// .. following is just the address of the register
-				#define JUMPER_DIRECTION ((uint32_t*) 0xff200064)
-
-				#define PUSH_KEY_LOCATION ((uint32_t*) 0xff200050)
-
-				#define DQ_mask (0x000000ff)	//connected at D7D6..D0
-
-				#define WP_shift 8
-				#define WP_mask (0x1&lt&ltWP_shift)	// connected at D8
-
-				#define CLE_shift 11
-				#define CLE_mask (0x1&lt&ltCLE_shift) // connected at D11
-
-				#define ALE_shift 10
-				#define ALE_mask (0x1&lt&ltALE_shift) //connected at D10
-
-				#define RE_shift 13
-				#define RE_mask (0x1&lt&ltRE_shift) // connected at D13
-
-				#define WE_shift 9
-				#define WE_mask (0x1&lt&ltWE_shift) // connected at D9
-
-				#define CE_shift 12
-				#define CE_mask (0x1&lt&ltCE_shift) // connected at D12
-
-				#define RB_shift 14
-				#define RB_mask (0x1&lt&ltRB_shift) // connected to D14
-
-
-				#define SAMPLE_TIME asm("nop");asm("nop");asm("nop")
-				#define HOLD_TIME asm("nop");asm("nop");asm("nop");asm("nop");asm("nop")
-				// 100ns
-				#define tWW asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop")
-				#define tWB {for(uint8_t i=0;i<20;i++) asm("nop");}
-				#define tRR {for(uint8_t i=0;i<4;i++) asm("nop");}
-				#define tRHW tWB
-				#define tCCS tWB
-				#define tADL tWB
-				#define tWHR {for(uint8_t i=0;i<12;i++) asm("nop");} // .. tWHR = 120ns
-			</code>
-		</pre>
+		<hr>
+	<button type="button" class="collapsible"> <i>Reset Device</i></button>
+		<div>
+			<ul>
+				<li>
+					Reset command puts the device to a known condition and aborts any ongoing operations.
+				</li>
+				<li>
+					Following images shows the Reset operation in action:
+				</li>
+				<img src="images/2_reset.PNG" class="center">
+				<li>
+					From above observation, we can see that the OutTime of reset operation is 1132 cc.
+				</li>
+				<li>
+					Measurement InTime = 1014 cc (ie 10140 ns)
+				</li>
+				<li>
+					Here, a call to function <i>send_command(..)</i> takes 921 cc (9210 ns)
+				</li>
+				<li>
+					We should provide a mandatory delay of <b>tWB = 200 ns maximum</b>. Our provided delay is 32 cc that would essentially means 32-9 = 21 cc (210 ns)
+				</li>
+				<li>
+					The while loop here waits for 69cc waiting for the RB# signal.
+				</li>
+			</ul>
 		</div>
-<hr>
-
-		<button type="button" class="collapsible"> <i>void send_command(..)</i></button>
-		<div class="content">
-			<pre>
-				<code>
-				// function to send an arbitrary command signal to the NAND device
-				// .. the procedure is as follows ( in the sequence )
-				void send_command(uint8_t command_to_send)
-				{
-					// set the required pins as output from the angle of NIOS machine
-					*jumper_direction |= 0x03fff;
-					*jumper_direction &= ~0x4000;
-
-					// let us first reset the DQ pints
-					*jumper_address &= ~(DQ_mask);
-
-					// .. Write Enable should go low WE => low
-					// .. reset the bit that is connected to WE
-					*jumper_address &= ~(WE_mask);
-					// .. .. Chip Enable should go low CE => low
-					*jumper_address &= ~(CE_mask);
-					// .. .. ALE should go low ALE => low
-					*jumper_address &= ~(ALE_mask);
-					// .. RE goes high
-					*jumper_address |= RE_mask;
-					// .. .. CLE should go high CLE => high
-					*jumper_address |= (CLE_mask);
-
-					// .. .. send the command signal in the DQ pins	
-					// .. .. the idea is clear the least 8-bits
-					// .. .. copy the values to be sent
-					*jumper_address = (*jumper_address&(~DQ_mask))|(command_to_send & DQ_mask);
-
-					//insert delay here
-					// .. tDS = 40 ns
-					SAMPLE_TIME;
-
-					// disable write enable again
-					*jumper_address |= (WE_mask);
-
-					//insert delay here
-					// .. because the command is written on the rising edge of WE
-					// tDH = 20 ns
-					HOLD_TIME;
-
-					// disable CLE
-					*jumper_address &= ~(CLE_mask);
-					
-					
-					// reset all the data on DQ pins
-					*jumper_address &= ~(DQ_mask);
-				}
-				</code>
-			</pre>
+		<hr>
+	<button type="button" class="collapsible"> <i>Send Command</i></button>
+		<div>
+			<ul>
+				<li>
+					Same data lines are used for command and data values. Thus it the function of other signals/pins to indicate the nature of the transfer.
+				</li>
+				<li>
+					Following is the timing diagram of the command cycle according to the manual.
+				</li>
+				<img src="images/3_sendcommand.PNG" class="center">
+				<li>
+					The function is implemented as an inline function and it is enforced. So, the InTime should be equal to OutTime measurements. OutTime from above is 921 cc.
+				</li>
+				<li>
+					InTime measurement is observed at 911 cc (9110 ns)
+				</li>
+				<li>
+					In the implemented function, the change in pins are maintained in an order to meet the need specified in the manual.
+				</li>
+				<li>
+					After we load the command on the pins, we wait for 15 cc (ie 15-9 = 6 cc ie 60 ns) to allow sampling (specified time is 40 ns).
+				</li>
+				<li>
+					Once we disable the WE# signal, we allow it to wait for 28cc (ie 28-9 = 19cc ie 190 ns) for holding (specified time is 20 ns).
+				</li>
+				<li>
+					Thus sending each byte of command takes 9.1 us or 9.2 us.
+				</li>
+				<li>
+					Before going out of the function, we disable the CLE signal and reset all the values on the DQ pins (data lines).
+				</li>
+			</ul>
 		</div>
-<hr>
-
-		<button type="button" class="collapsible"> <i>void send_addresses(..)</i></button>
-		<div class="content">
-			<pre>
-				<code>
-			// function to send address to the NAND device 
-			// .. the procedure is as follows (in the sequence)
-			void send_addresses(uint8_t* address_to_send, uint8_t num_address_bytes)
-			{
-				// set the required pins as output
-				*jumper_direction |= 0x03fff;
-				*jumper_direction &= ~0x4000;
-
-			#if DEBUG
-				printf("Sending Address: ");
-			#endif
-
-			// .. .. CE goes low
-			*jumper_address &= ~CE_mask;
-			// .. CLE goes low
-			*jumper_address &= ~CLE_mask;
-			// .. ALE goes high
-			*jumper_address |= ALE_mask;
-			// .. RE goes high
-			*jumper_address |= RE_mask;
-
-			for(uint8_t i=0;i&ltnum_address_bytes;i++)
-			{
-				*jumper_address &= ~(WE_mask);
-
-			// .. Put data on the DQ pin
-			// .. .. the idea is clear the least 8-bits
-			// .. .. copy the values to be sent
-			*jumper_address = (*jumper_address&(~DQ_mask))|(address_to_send[i] & DQ_mask);
-	#if DEBUG
-			printf("0x%x,", (uint8_t)*jumper_address&0xff);
-	#endif
-			//.. a simple delay
-			SAMPLE_TIME; //tDS
-
-			// .. Address is loaded from DQ on rising edge of WE
-			*jumper_address |= WE_mask;
-			// .. maintain WE high for certain duration and make it low
-			
-			// .. put next address bits on DQ and cause rising edge of WE
-			// .. address expected is 5-bytes ColAdd1, ColAdd2, RowAdd1, RowAdd2, RowAdd3
-			
-			//insert delay here
-			HOLD_TIME;	// tDH
-			}
-			// .. ALE goes low
-			*jumper_address &=  ~(ALE_mask);
-			// reset all the data on DQ pins
-			*jumper_address &= ~(DQ_mask);
-
-			#if DEBUG
-				printf("\n");
-			#endif
-			}
-				</code>
-			</pre>
+		<hr>
+	<button type="button" class="collapsible"> <i>Send Address/es</i></button>
+		<div>
+			<ul>
+				<li>
+					Function to send address is also implemented as an inline function.
+				</li>
+				<li>
+					Following is the timing diagram for the address sending sequence:
+				</li>
+				<img src="images/4_sendaddress.PNG" class="center">
+				<li>
+					Sending address needs variable number of address bytes to be sent to the NAND device. For block operation, we just need to send 3 bytes while for page operation, we need to send 5 bytes of the address data.
+				</li>
+				<li>
+					We condition the operation  by setting the pins of NAND device as mentioned in the manual. We set CE# and CLE to low, and ALR and RE# to high.
+				</li>
+				<li>
+					The address bytes are loaded in a loop. We set the WE# to high and load the address byte to the pins. After each byte is loaded onto the DQ pins, we wait for same set up time as in Send Command above. We then set WE# to high, and wait for another time equal to hold time (same as in Send Command above). 
+				</li>
+				<li>
+					After all the bytes are sent, we lower ALE pin and clear data off the DQ pins.
+				</li>
+				<li>
+					The InTime measured for sending 5 byte address is 2200 cc (22000 ns ie 22 us). Silimar time measured for sending 3 bytes address is 1660 cc (ie 16620 ns ie 16 us)
+				</li>
+				<li>
+					The OutTime measured for the above measurement made from <i>read_page(..)</i> function is 2278 cc (22780 ns = 22.7 us). Similar the OutTime measured for sending 3 address bytes is 1673 cc (16730 ns = 16.7 us)
+				</li>
+			</ul>
 		</div>
-<hr>
-
-		<button type="button" class="collapsible"> <i>void send_data(..)</i></button>
-		<div class="content">
-			<pre>
-				<code>
-				// function to send address from the host machine to the NAND flash
-				// .. Data is written from DQ[7:0] to the cache register of the selected die (LUN)
-				// .. .. on the rising edge of WE# when CE# is LOW, ALE is LOW, CLE is LOW, and RE# is HIGH
-				void send_data(uint8_t* data_to_send,uint16_t num_data)
-				{
-					// .. CE should be low
-					*jumper_address &= ~CE_mask;
-					// .. CLE should be low
-					*jumper_address &= ~CLE_mask;
-					// .. ALE should be low
-					*jumper_address &= ~ALE_mask;
-					// .. RE should be high
-					*jumper_address |= RE_mask;
-
-					for(uint16_t i=0;i&ltnum_data;i++)
-					{
-						// .. make WE low and repeat the procedure again for number of bytes required (int num_data)
-						*jumper_address &= ~WE_mask;
-
-						// .. put data on DQ and latch WE high for certain duration
-						// .. .. the idea is clear the least 8-bits
-						// .. .. copy the values to be sent
-						*jumper_address = (*jumper_address&(~DQ_mask))|(data_to_send[i] & DQ_mask);
-						//.. a simple delay
-						SAMPLE_TIME;	// tDS
-
-						*jumper_address |= WE_mask;
-
-						//insert delay here
-						HOLD_TIME;	//tDH
-
-						// reset all the data on DQ pins
-						// .. this might be unnecesary
-						*jumper_address &= ~(DQ_mask);		
-					}
-				}
-				</code>
-			</pre>
+		<hr>
+	<button type="button" class="collapsible"> <i>Send Data</i></button>
+		<div>
+			<ul>
+				<li>
+					The function <i>send_data()</i> is implemented as an inline function.
+				</li>
+				<li>
+					The task of this function is to copy the user data to the cache function. This data in cache function will be used by the program operation to program to specified location in NAND memory.
+				</li>
+				<li>
+					Since the data to be sent can vary in the number of bytes to be sent. Thus the arguments to the function are: the pointer to the data array and number of items in the array. There is no  return value.
+				</li>
+				<li>
+					Following image shows the timing diagram of the operation:
+				</li>
+				<img src="images/5_senddata.PNG" class="center">
+				<li>
+					In the function, we first set up the pins to condition for data input to NAND chip.
+				</li>
+				<li>
+					Then, we use a for loop to send each data byte through the pins to the NAND chip.
+				</li>
+				<li>
+					Making a call to <i>send_data()</i> with 8192 bytes ie while programming a page, the OutTime measured is 2801389 cc (28013890 ns = 28.01 ms). InTime for the same was measured to be 2774644 cc (27746440 ns = 27.75 ms)
+				</li>
+			</ul>
 		</div>
-<hr>
-
-		<button type="button" class="collapsible"> <i>void get_data(..)</i></button>
-		<div class="content">
-			<pre>
-				<code>
-				// function to receive data from the NAND device
-				// .. data is output from the cache regsiter of selected die
-				// .. it is supported following a read operation of NAND array
-				void get_data(uint8_t* data_received,uint16_t num_data)
-				{
-					// set the DQ pins as IP to the NIOS processor
-					// .. 0 is IP and 1 is OP
-					*jumper_direction &= ~0x40ff;
-
-					// .. data can be received when on ready state (RDY signal)
-					// .. ensure RDY is high
-					// .. .. just keep spinning here checking for ready signal
-					while((*jumper_address & RB_mask)== 0x00);
-
-					// .. data can be received following READ operation
-					// .. the procedure should be as follows
-					// .. .. CE should be low
-					*jumper_address &= ~CE_mask;
-					// .. make WE high
-					*jumper_address |= WE_mask;
-					// .. .. ALE and CLE should be low
-					*jumper_address &= ~ALE_mask;
-					*jumper_address &= ~CLE_mask;
-
-					for(uint16_t i=0;i&ltnum_data;i++)
-					{			
-						// set the RE to high for next cycle
-						*jumper_address &= ~RE_mask;
-
-						// tRP = 50ns
-						SAMPLE_TIME;
-						asm("nop");
-
-						// .. data is available at DQ pins on the falling edge of RE pin (RE is also input to NAND)
-						*jumper_address |= RE_mask;
-						
-						//insert delay here
-						// .. tREH = 30 ns
-						asm("nop");
-
-						// read the data
-						data_received[i] = *jumper_address & DQ_mask;
-						asm("nop");
-					}
-
-					// set the pins as output
-					*jumper_direction |= 0x03fff;	
-				}
-				</code>
-			</pre>
+		<hr>
+	<button type="button" class="collapsible"> <i>Get Data</i></button>
+		<div>
+			<ul>
+				<li>
+					The function <i>get_data()</i> is not implemented as an inline function.
+				</li>
+				<li>
+					In the function, we first change the direction of the pins to condition them to receive data bytes. This function actually acquires the content of the cache and spits them out one byte at a time to the data pins.
+				</li>
+				<li>
+					Following image shows the timing diagram of the operation:
+				</li>
+				<img src="images/6_getdata.PNG" class="center">
+				<li>
+					Since the number of bytes to be read depends on the use case and the need of the user, the arguments to the functions are: the pointer to the data array and the number of bytes to read.
+				</li>
+				<li>
+					InTime taken to get 8194 bytes takes 2134689 cc (21346890 ns = 21.35 ms). This is the time it takes by the implemented code to transfer the data from cache to the interfacing microcontroller array.
+				</li>
+				<li>
+					The OutTime for the same operation is measured as 2134799 cc (21347990 ns = 21.34 ms)
+				</li>
+				<li>
+					The same function is also used for checking status from the status register. While erase operation, the <i>get_data()</i> with 1 byte to read costs on average of (OutTime) 1065 cc (10650 ns = 10 us) while for page program operation, the OutTime is 917 cc (9170 ns = 9.17 us).
+				</li>
+			</ul>
 		</div>
-<hr>
-
-
-		<button type="button" class="collapsible"> <i>void write_protect(..)</i></button>
-		<div class="content">
-			<pre>
-				<code>
-				// function to disable Program and Erase operation
-				// .. when WP is low, program and erase operation are disabled
-				// .. when WP is high, program and erase operation are enabled
-				void write_protect()
-				{
-					// check to see if the device is busy
-					// .. wait if busy
-					while((*jumper_address&RB_mask)==0x00);
-
-					// wp to low
-					*jumper_address &= ~WP_mask;	
-					
-					//insert delay here
-					for(uint8_t i=0;i<4;i++);
-				}
-				</code>
-			</pre>
+		<hr>
+	<button type="button" class="collapsible"> <i>Erase Block</i></button>
+		<div>
+			<ul>
+				<li>
+					Erase Block operation is implemented as function <i>erase_block()</i>. The function takes an array of bytes as argument. This array should correspond the row address of the block to be erased in the form {R1,R2,R3} where R1 is the lowest address byte.
+				</li>
+				<li>
+					Following image shows the timing diagram of the operation:
+				</li>
+				<img src="images/7_eraseblock.PNG" class="center">
+				<li>
+					After the address bytes are sent and the final command byte is sent to the NAND device, we wait for mandatory <i>tWB = 200 ns</i>.
+				</li>
+				<li>
+					InTime Measurement of erase block is measured as 174942 cc (1749420 ns = 1.7 ms). This is the time that includes both the methods of checking status:
+					<ul>
+						<li>
+							wait on RB# signal
+						</li>
+						<li>
+							check status register
+						</li>
+					</ul>
+				</li>
+				<li>
+					OutTime measurement of erase block is measured as 174515 cc (1745150 ns = 1.74 ms).
+				</li>
+			</ul>
 		</div>
-<hr>
-
-
-		<button type="button" class="collapsible"> <i>void write_enable(..)</i></button>
-		<div class="content">
-			<pre>
-				<code>
-				void write_enable()
-				{
-					// check to see if the device is busy
-					// .. wait if busy
-					while((*jumper_address&RB_mask)==0x00);
-
-					// wp to high
-					*jumper_address |= WP_mask;
-					
-					//insert delay here
-					tWW;
-				}
-				</code>
-			</pre>
+		<hr>
+	<button type="button" class="collapsible"> <i>Program Page</i></button>
+		<div>
+			<ul>
+				<li>
+					Program page operation is implemented in function named <i></i>
+				</li>
+				<li>
+					In order to program a page, we need to send five byte address of the page to be programmed and 8192 bytes of the data to be programmed to the NAND flash in the sequence as shown in the figure above.
+				</li>
+				<li>
+					Following image shows the timing diagram of the operation:
+				</li>
+				<img src="images/8_programpage.PNG" class="center">
+				<li>
+					After the address and data sequence are sent, then we must wait for a mandatory time of <i>tWB = 200 ns</i>.
+				</li>
+				<li>
+					The end of program operation is can be confirmed by checking Ready signal, and the status can be checked by reading the status register.
+				</li>
+				<li>
+					InTime measurement for a page program including the <i>send_data()</i> for 8192 bytes is 2889031 cc (28890310 ns = 28.90 ms). Time time for program operation after the last command sequence, however, is measured as 107834 cc (1078340 ns = 1.08 ms).
+				</li>
+			</ul>
 		</div>
-<hr>
 
 
-		<button type="button" class="collapsible"> <i>void device_initialization(..)</i></button>
-		<div class="content">
-			<pre>
-				<code>
-				// function to initialize the NAND device
-				// .. following are the tasks to be performed for initialization of NAND device
-				// .. provide Vcc (ie ramp Vcc)
-				// .. host must wait for R/B to be valid (R/B should be low for certain duration and be high
-				// .. .. to indicate device is ready) R/B is output from the NAND device
-				// .. issue 0xFF command after R/B goes high (Reset is the first command to be issued)
-				// .. R/B should be monotired again after issuing 0XFF command
-				void device_initialization()
-				{
-					*jumper_direction &= ~0x4000;
-					*jumper_direction |= 0x3fff;
-
-					//insert delay here
-					for(uint16_t i=0;i<5000;i++);	//50 us max
-
-					// wait for R/B signal to go high
-					while((*jumper_address & RB_mask)==0);
-					// now issue RESET command
-					reset_device();
-				}
-				</code>
-			</pre>
-		</div>
-<hr>
-
-
-		<button type="button" class="collapsible"> <i>void reset_device(..)</i></button>
-		<div class="content">
-			<pre>
-				<code>
-				// function to reset the whole device
-				// .. issue a command 0xFF for reset operation
-				// .. following operations should be performed for this
-				// .. .. enable command cycle
-				// .. .. command to be sent is 0xFF
-				// .. .. check for R/B signal to be high after certain duration (should go low(busy) and go high (ready))
-				void reset_device()
-				{
-					// oxff is reset command
-					send_command(0xff);
-					// no address is expected for reset command
-					// wait for busy signal again
-					
-					//insert delay here
-					// .. not needed because the next polling statement will take care
-					// .. polling the Ready/BUSY signal
-					// .. but we should wait for tWB = 200ns before the RB signal is valid
-					tWB;	// tWB = 200ns
-
-					while((*jumper_address & RB_mask)==0);
-				}
-				</code>
-			</pre>
-		</div>
-<hr>
-
-
-		<button type="button" class="collapsible"> <i>void reset_LUN(..)</i></button>
-		<div class="content">
-			<pre>
-				<code>
-				// following function will reset just a particular LUN
-				// .. a LUN or logical unit is also called a NAND flash die (our NAND has 2 planes in a die)
-				// .. can be used to put the LUN into a known state or abort commadn sequences going on
-				// .. .. all the cache contents are invalid
-				// .. .. if any operation is going on, partial operations might take place
-				// .. .. the command issuing has to be followed by sequence of (3-byte) address of the LUN
-				void reset_LUN(uint8_t* address_LUN, uint8_t num_address_bytes)
-				{
-					// 0xfa is the reset LUN command
-					send_command(0xfa);
-					// send the address of the LUN to reset
-					send_addresses(address_LUN,num_address_bytes);
-					
-					//insert delay here
-					tWB;//tWB
-					while((*jumper_address & RB_mask)==0);	
-				}
-				</code>
-			</pre>
-		</div>
-<hr>
-
-
-		<button type="button" class="collapsible"> <i>void read_device_id_00(..)</i></button>
-		<div class="content">
-			<pre>
-				<code>
-				// function to read the device ID
-				// when read from address 00h, it returns 8-byte ID of which first 5-bytes are manufacturer ID
-				// follow the following sequences
-				// .. set command cycle
-				// .. .. send 90h as command
-				// .. set address sending mode
-				// .. ..send 00 as address
-				// .. wait for tWHR duration
-				// .. read 8-bytes from the DQ pins
-				void read_device_id_00(uint8_t* device_id_array)
-				{
-					// make sure none of the LUNs are busy
-					while((*jumper_address & RB_mask)==0);
-					// read ID command
-					send_command(0x90);
-					// send address 00
-					send_address(0x00);
-					// wait for tWHR duration
-					
-					//insert delay here
-					// .. tWHR = 120ns
-					tWHR;
-
-					get_data(device_id_array,8);
-				}
-				</code>
-			</pre>
-		</div>
-<hr>
-
-
-		<button type="button" class="collapsible"> <i>void detect_device(..)</i></button>
-		<div class="content">
-			<pre>
-				<code>
-				// function that reads the device ID and tries to detect the device name
-				// .. call the function device_id at address 00h
-				// .. lookup table based finding for device name
-				// .. this function is not decisive
-				void detect_device()
-				{
-					// create a 8-byte variable
-					// .. static array
-					uint8_t my_device_id[8];
-
-					// following call should return the device ID to the array
-					read_device_id_00(my_device_id);
-					char device_name[20] = "?";
-					// now check each bytes
-					if(my_device_id[0]==0x2c)
-					{
-						if(my_device_id[1]==0x88)
-						{
-							if(my_device_id[2]==0x04)
-							{
-								if(my_device_id[3]==0x4b)
-								{					
-									if(my_device_id[4]==0xa9)
-									{
-										strcpy(device_name,"MT29FxxxG08Cxxxx\0");	
-									}
-								}
-							}
-						}else if(my_device_id[1]==0xA8)
-						{
-							if(my_device_id[2]==0x05)
-							{
-								if(my_device_id[3]==0x5b)
-								{
-									if(my_device_id[4]==0xa9)
-									{
-										strcpy(device_name,"MT29FxxxG08Cxxxx\0");	
-									}					
-								}				
-							}
-						}else if(my_device_id[1]==0x64)
-						{
-							if(my_device_id[2]==0x44)
-							{
-								if(my_device_id[3]==0x4b)
-								{
-									if(my_device_id[4]==0xa9)
-									{
-										strcpy(device_name,"MT29F64G08CBABA\0");	
-									}					
-								}				
-							}
-						}
-					}
-
-					if(device_name[0]=='?')
-					{
-						printf("Device Family Not Recognized\n");
-					}else
-					{
-						printf("Detected Device ID is %s\n", device_name);
-					}
-				}
-				</code>
-			</pre>
-		</div>
-<hr>
-
-
-		<button type="button" class="collapsible"> <i>void read_device_id_20(..)</i></button>
-		<div class="content">
-			<pre>
-				<code>
-				// function to read the 4-byte ONFI code
-				// when read from address 00h, it returns 4-byte ONFI code
-				// follow the following sequences
-				// .. set command cycle
-				// .. .. send 90h as command
-				// .. set address sending mode
-				// .. ..send 20 as address
-				// .. wait for tWHR duration
-				// .. read 4-bytes from the DQ pins
-				void read_device_id_20(uint8_t* device_id_array)
-				{
-					// make sure none of the LUNs are busy
-					while((*jumper_address & RB_mask)==0);
-					// read ID command
-					send_command(0x90);
-					// send address 00
-					send_address(0x20);
-					// wait for tWHR duration
-					
-					// .. tWHR = 120ns
-					tWHR;
-
-					get_data(device_id_array,4);
-				#if DEBUG
-					printf("After reading from the device\n");
-					print_array(device_id_array,4);
-				#endif
-				}
-				</code>
-			</pre>
-		</div>
-<hr>
-
-
-		<button type="button" class="collapsible"> <i>void read_unique_id(..)</i></button>
-		<div class="content">
-			<pre>
-				<code>
-				// function to read the unique identifier programmed into the target
-				// .. only accepted when device is not busy
-				// .. start a command cycle with 0x70 as command
-				// .. start a address cycle of 0x00 as address
-				// .. target is busy for tR , can be tested using R/B# signal begin high to indicate if the device is ready
-				// .. one data byte is output per RE# toggle at DQ pin
-				// .. .. 32 bytes of data is received
-				// .. .. .. first 16 bytes is the unique ID and next 16-bytes is complement of the data
-				// .. .. .. XOR should be done to ensure correctness
-				void read_unique_id(uint8_t* device_id_array, uint8_t num_data)
-				{
-					// make sure none of the LUNs are busy
-					while((*jumper_address & RB_mask)==0);
-
-					// command for read unique ID
-					send_command(0xed);	
-					// address, lets send 00
-					send_address(0x00);
-
-					
-					//insert delay here
-					// ..tWB = 200ns
-					tWB;
-
-					// make sure none of the LUNs are busy
-					while((*jumper_address & RB_mask)==0);
-
-					// read from different address
-					// change_read_column();
-
-					uint8_t* data_temp = (uint8_t*)malloc(32*sizeof(uint8_t));
-
-					tRR;
-
-				#if DEBUG
-					printf("Before reading from the device\n");
-					print_array(data_temp,32);
-				#endif
-
-					get_data(data_temp,32);
-
-
-				#if DEBUG
-					printf("After reading from the device\n");
-					print_array(data_temp,32);
-				#endif
-
-					// now check the validity of the data
-					for(uint8_t i=0;i<16;i++)
-					{
-						if((data_temp[i]^data_temp[16+i]) != 0xff)
-						{
-							printf("Error in reading the unique device ID\n");
-							break;
-						}
-					}
-					for(uint8_t i=0;i&ltnum_data;i++)
-					{
-						device_id_array[i] = data_temp[i];
-					}
-					free(data_temp);
-				}
-				</code>
-			</pre>
-		</div>
-<hr>
-
-
-		<button type="button" class="collapsible"> <i>void read_status(..)</i></button>
-		<div class="content">
-			<pre>
-				<code>
-				// following function can be used to read the status following any command
-				void read_status(uint8_t* status_value)
-				{
-					send_command(0x70);	
-					//insert delay here
-					// .. tWHR= 120ns
-					tWHR;
-
-					get_data(status_value,1);
-				}
-				</code>
-			</pre>
-		</div>
-<hr>
-
-
-		<button type="button" class="collapsible"> <i>void read_status_enhanced(..)</i></button>
-		<div class="content">
-			<pre>
-				<code>
-				// use this for multi-LUN device to avoid bus contention
-				// .. r1, r2 and r3 are the three-bytes for the row addresss
-				void read_status_enhanced(uint8_t* status_value, uint8_t* r1r2r3)
-				{
-					send_command(0x78);
-					send_addresses(r1r2r3,3);
-					
-					//insert delay here
-					//insert delay here
-					// .. tWHR= 120ns
-					tWHR;
-
-					get_data(status_value,1);	
-				}
-				</code>
-			</pre>
-		</div>
-<hr>
-
-
-		<button type="button" class="collapsible"> <i>void print_array(..)</i></button>
-		<div class="content">
-			<pre>
-				<code>
-				// just a normal function to print an array to terminal
-				void print_array(uint8_t* my_array, uint16_t len)
-				{
-					for(uint16_t i=0;i&ltlen;i++)
-					{
-						printf("0x%x ", my_array[i]);
-					}
-					printf("\n");
-				}
-				</code>
-			</pre>
-		</div>
-<hr>
-
-
-		<button type="button" class="collapsible"> <i>void change_read_column(..)</i></button>
-		<div class="content">
-			<pre>
-				<code>
-				// follow the following function call by get_data() function call
-				// .. please change this if the device has multiple dies
-				void change_read_column(uint8_t* col_address)
-				{
-					tRHW;	// tRHW = 200ns
-
-					send_command(0x05);
-					send_addresses(col_address,2);
-
-					send_command(0xe0);
-
-					tCCS;	//tCCS = 200ns
-				}
-				</code>
-			</pre>
-		</div>
-<hr>
-
-
-		<button type="button" class="collapsible"> <i>void change_read_column_enhanced(..)</i></button>
-		<div class="content">
-			<pre>
-				<code>
-				// follow the following function call by get_data() function call
-				void change_read_column_enhanced(uint8_t* address)
-				{
-					tRHW;	// tRHW = 200ns
-
-					send_command(0x06);
-					send_addresses(address,5);
-
-					send_command(0xe0);
-
-					tCCS;	//tCCS = 200ns
-				}
-				</code>
-			</pre>
-		</div>
-<hr>
-
-
-		<button type="button" class="collapsible"> <i>void change_write_column(..)</i></button>
-		<div class="content">
-			<pre>
-				<code>
-				// following function call should be followed by send_data() function calls
-				// .. this just changes the address in the selected cache register
-				void change_write_column(uint8_t* col_address)
-				{
-					send_command(0x85);
-					send_addresses(col_address,2);
-
-					tCCS;	//tCCS = 200ns
-				}
-				</code>
-			</pre>
-		</div>
-<hr>
-
-
-		<button type="button" class="collapsible"> <i>void change_row_address(..)</i></button>
-		<div class="content">
-			<pre>
-				<code>
-				// change teh row address where the cache register contents will be programmed in NAND flash
-				// .. row address means block and page address
-				// .. data input is optional after the address cycles
-				// .. .. data input begins at the column address specified
-				void change_row_address(uint8_t* address)
-				{
-					send_command(0x85);
-
-					send_addresses(address,5);
-
-					// .. wait before inputting the data
-					tCCS;	//tCCS = 200ns
-				}
-				</code>
-			</pre>
-		</div>
-<hr>
-
-
-		<button type="button" class="collapsible"> <i>void read_page(..)</i></button>
-		<div class="content">
-			<pre>
-				<code>
-				// write a function to perform an read operation from NAND flash to cache register
-				// .. reads one page from the NAND to the cache register
-				// .. during the read, you can use change_read_column and change_row_address
-				void read_page(uint8_t* address,uint8_t address_length)
-				{
-					// make sure none of the LUNs are busy
-					while((*jumper_address & RB_mask)==0);
-
-					send_command(0x00);
-					send_addresses(address,address_length);
-					send_command(0x30);
-
-					// just a delay
-					tWB;
-					// check for RDY signal
-					while((*jumper_address & RB_mask)==0);
-					// tRR = 40ns
-					tRR;
-				}
-				</code>
-			</pre>
-		</div>
-<hr>
-
-
-		<button type="button" class="collapsible"> <i>void read_page_cache_sequential(..)</i></button>
-		<div class="content">
-			<pre>
-				<code>
-				// following is the faster read operation
-				// .. essentially calls the read_page function above
-				// .. and reads the output data from the cache and at the same time copies next page to the data regsiter
-				void read_page_cache_sequential(uint8_t* address, uint8_t address_length,uint8_t* data_read,uint16_t* data_read_len,uint16_t num_pages)
-				{
-					// make sure none of the LUNs are busy
-					while((*jumper_address & RB_mask)==0);
-
-					send_command(0x00);
-					send_addresses(address,address_length);
-					send_command(0x30);
-
-					// just a delay
-					tWB;
-
-					// check if it is out of Busy cycle
-					while((*jumper_address & RB_mask)==0);
-					// lets wait again
-					tRR;
-
-					for(uint16_t page_num = 0;page_num&ltnum_pages-1;page_num++)
-					{
-						send_command(0x31);
-						// just a delay
-						tWB;
-
-						// check if it is out of Busy cycle
-						while((*jumper_address & RB_mask)==0);
-						// lets wait again
-						tRR;
-
-						*data_read_len = 8192;
-						get_data(data_read+(page_num*(*data_read_len)),*data_read_len);
-					}	
-
-					// read page cache last
-					send_command(0x3f);
-					// just a delay
-					tWB;
-
-					// check if it is out of Busy cycle
-					while((*jumper_address & RB_mask)==0);
-					// lets wait again
-					tRR;
-
-					*data_read_len = 8192;
-					get_data(data_read+((num_pages-1)*(*data_read_len)),*data_read_len);
-				}
-				</code>
-			</pre>
-		</div>
-<hr>
-
-
-		<button type="button" class="collapsible"> <i>void read_mode(..)</i></button>
-		<div class="content">
-			<pre>
-				<code>
-				// enables data output for the last selected die and cache register
-				// .. after a READ operation has been monitored
-				void read_mode()
-				{
-					send_command(0x00);
-				}
-				</code>
-			</pre>
-		</div>
-<hr>
-
-
-		<button type="button" class="collapsible"> <i>void program_page(..)</i></button>
-		<div class="content">
-			<pre>
-				<code>
-				// program operation is used to move data from cache or data regsiter to NAND array
-				// .. during program operation, the contents of cache or data registers are modified by internal control logic
-				// .. pages in a block should be programmed from the least significant page to the most sign addres
-				// .. programming pages out of order in a block is not allowed
-				// .. address: should be 5 bytes and data should be 
-				void program_page(uint8_t* address,uint8_t* data,uint16_t num_data)
-				{
-					// 
-					send_command(0x80);
-					send_addresses(address,5);
-
-					// tADL
-					tADL;
-
-					send_data(data,num_data);
-					send_command(0x10);
-
-					tWB;
-					
-				#if DEBUG
-					printf("Inside program Fn: Address is: ");
-					print_array(address,5);
-				#endif
-					// check if it is out of Busy cycle
-					while((*jumper_address & RB_mask)==0);
-
-					uint8_t status_value;
-					// .. use  the commended code for multi-plane die
-					// read_status_enhanced(&status_value,(address+2));
-					read_status(&status_value);
-					if(status_value&0x01)
-					{
-						printf("Failed Program Operation\n");
-					}else
-					{
-				#if DEBUG
-				printf("Program Operation Successful\n");
-				#endif
-					}
-				}
-				</code>
-			</pre>
-		</div>
-<hr>
-
-
-		<button type="button" class="collapsible"> <i>void program_page_cache(..)</i></button>
-		<div class="content">
-			<pre>
-				<code>
-				// function used to program multiple pages
-				// the data is copied to the cache, and then to the NAND memory
-				// .. there is no need to wait for the previous operation to complete
-				// .. and can move on with next program operation of page
-				// address is an array with multiple of 5, each representing the address of each page
-				// data is same programmed to each page
-				// num_data is the number of bytes of data in data array
-				void program_page_cache(uint8_t* address,uint8_t* data,uint16_t num_data,uint8_t num_pages)
-				{
-					for(uint8_t page_num = 0;page_num&ltnum_pages-1;page_num++)	
-					{
-						send_command(0x80);
-						send_addresses(address+(5*page_num),5);
-
-						// tADL
-						tADL;
-
-						send_data(data,num_data);
-						send_command(0x15);
-
-						tWB;
-
-						// check if it is out of Busy cycle
-						while((*jumper_address & RB_mask)==0);
-					}
-					send_command(0x80);
-					send_addresses((address+5*(num_pages-1)),5);
-
-					// tADL
-					tADL;
-
-					send_data(data,num_data);
-					send_command(0x10);
-
-					tWB;
-
-					// check if it is out of Busy cycle
-					while((*jumper_address & RB_mask)==0);
-
-					uint8_t status_value;
-					// .. use  the commended code for multi-plane die
-					// read_status_enhanced(&status_value,(address+2));
-					read_status(&status_value);
-					if(status_value&0x01)
-					{
-						printf("Failed Program Operation\n");
-					}else
-					{
-				#if DEBUG
-				printf("Program Operation Successful\n");
-				#endif
-					}
-				}
-				</code>
-			</pre>
-		</div>
-<hr>
-
-
-		<button type="button" class="collapsible"> <i>void erase_block(..)</i></button>
-		<div class="content">
-			<pre>
-				<code>
-				void erase_block(uint8_t* row_address)
-				{	
-					*jumper_direction &= ~RB_mask;
-
-					// check if it is out of Busy cycle
-					while((*jumper_address & RB_mask)==0);
-
-					send_command(0x60);
-					send_addresses(row_address,3);
-					send_command(0xd0);
-
-					tWB;
-					
-				#if DEBUG
-					printf("Inside Erase Fn: Address is: ");
-					print_array(row_address,3);
-				#endif
-
-					// check if it is out of Busy cycle
-					while((*jumper_address & RB_mask)==0);
-
-					// let us read the status register value
-					uint8_t status;
-					read_status(&status);	
-					if(status&0x01)
-					{
-						printf("Failed Erase Operation\n");
-					}else
-					{
-				#if DEBUG
-				printf("Erase Operation Successful\n");
-				#endif
-					}
-				}
-				</code>
-			</pre>
-		</div>
 <hr>
 <hr>
 
