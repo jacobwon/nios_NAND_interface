@@ -47,21 +47,21 @@ int main()
 	// // let us just read a random page for now
 	// // .. 5-byte page address
 	// // .. c1,c2,r1,r2,r3
-	uint8_t my_page_address[5] = {0x00,0x00,0x0,0xf7,0x06}; 
+	// uint8_t my_page_address[5] = {0x00,0x00,0x0,0xf7,0x06}; 
 	// // uint8_t my_page_address2[5] = {0x00,0x00,0x01,0xf7,0x06}; 
 	// uint8_t my_page_address[5] = {0x00,0x00,0x04,0xf7,0x06}; 
 	// uint8_t my_page_address2[5] = {0x00,0x00,0x05,0xf7,0x06}; 
 	// uint8_t new_col[2] = {50,0};
-	uint8_t data_received[8192];
+	// uint8_t data_received[8192];
 
 	// printf(" * Printing array value:");
-	memset(data_received,0x0,sizeof(data_received));
+	// memset(data_received,0x0,sizeof(data_received));
 	// // print_array(data_received,100);
 
 	// printf(" * Reading address (address in reverse order:)");
 	// print_array(my_page_address,5);
 
-	read_page(my_page_address,5);
+	// read_page(my_page_address,5);
 	// change_read_column(new_col);
 	// get_data(data_received,100);
 	// // print_array(data_received,100);
@@ -76,9 +76,9 @@ int main()
 	// // let us erase the block
 	// printf(" 2* Erasing address (address in reverse order:)");
 	// print_array(my_page_address+2,3);
-	enable_erase();
-	erase_block(my_page_address+2);
-	disable_erase();
+	// enable_erase();
+	// erase_block(my_page_address+2);
+	// disable_erase();
 
 	// // now read the erased page, should be 0xffs
 	// read_page(my_page_address,5);
@@ -108,9 +108,9 @@ int main()
 	// // let us program the page
 	// printf(" 4* Programming address (address in reverse order:)");
 	// print_array(my_page_address,5);
-	enable_erase();
-	program_page(my_page_address,data_received,8192);
-	disable_erase();
+	// enable_erase();
+	// program_page(my_page_address,data_received,8192);
+	// disable_erase();
 	// read_page(my_page_address,5);
 	// change_read_column(new_col);
 	// printf("Calling get_data()\n");

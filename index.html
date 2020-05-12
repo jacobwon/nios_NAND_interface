@@ -200,11 +200,14 @@
 	<hr>
 	<hr>
 
-	<h1>Performance Analysis</h1>
+	<h1><a name="perf"></a> Performance Analysis</h1>
 	<hr>
 	<button type="button" class="collapsible"> <i>Device Initialization</i></button>
 		<div>
 			<ul>
+				<li>
+					Click <a href="#codeapi">here</a> to jump to codes.
+				</li>
 				<li>
 					Device Initialization function is the first function that is to be called when starting the NAND flash device. This function sets the pin direction appropriately such that only the pin R/B# is set as input for the microcontroller.
 				</li>
@@ -228,13 +231,10 @@
 					Measurement InTime = 51866 cc (518660 ns)
 				</li>
 				<li>
-					The <i>for</i> loop in the code designed for delay consumes 50535 cc (505350 ns = 50.5 us).
+					The <i>for</i> loop in the code designed for delay consumes 5178 cc (51780 ns = 51.7 us).
 				</li>
 				<li>
 					After the delay is finished, the <i>while</i> loop that probes the RB# signal waits for about 73 cc (730 ns)
-				</li>
-				<li>
-					The call to reset device function is made after the <i>while</i> loop. This function call consumes 1132 cc (11320 ns)
 				</li>
 			</ul>
 		</div>
@@ -242,6 +242,9 @@
 	<button type="button" class="collapsible"> <i>Reset Device</i></button>
 		<div>
 			<ul>
+				<li>
+					Click <a href="#codeapi">here</a> to jump to codes.
+				</li>
 				<li>
 					Reset command puts the device to a known condition and aborts any ongoing operations.
 				</li>
@@ -270,6 +273,9 @@
 	<button type="button" class="collapsible"> <i>Send Command</i></button>
 		<div>
 			<ul>
+				<li>
+					Click <a href="#codeapi">here</a> to jump to codes.
+				</li>
 				<li>
 					Same data lines are used for command and data values. Thus it the function of other signals/pins to indicate the nature of the transfer.
 				</li>
@@ -305,6 +311,9 @@
 		<div>
 			<ul>
 				<li>
+					Click <a href="#codeapi">here</a> to jump to codes.
+				</li>
+				<li>
 					Function to send address is also implemented as an inline function.
 				</li>
 				<li>
@@ -336,6 +345,9 @@
 		<div>
 			<ul>
 				<li>
+					Click <a href="#codeapi">here</a> to jump to codes.
+				</li>
+				<li>
 					The function <i>send_data()</i> is implemented as an inline function.
 				</li>
 				<li>
@@ -363,6 +375,9 @@
 	<button type="button" class="collapsible"> <i>Get Data</i></button>
 		<div>
 			<ul>
+				<li>
+					Click <a href="#codeapi">here</a> to jump to codes.
+				</li>
 				<li>
 					The function <i>get_data()</i> is not implemented as an inline function. This function reads the data from the cache of NAND and stores in a buffer.
 				</li>
@@ -394,6 +409,9 @@
 	<button type="button" class="collapsible"> <i>Erase Block</i></button>
 		<div>
 			<ul>
+				<li>
+					Click <a href="#codeapi">here</a> to jump to codes.
+				</li>
 				<li>
 					Erase Block operation is implemented as function <i>erase_block()</i>. The function takes an array of bytes as argument. This array should correspond the row address of the block to be erased in the form {R1,R2,R3} where R1 is the lowest address byte.
 				</li>
@@ -430,6 +448,9 @@
 		<div>
 			<ul>
 				<li>
+					Click <a href="#codeapi">here</a> to jump to codes.
+				</li>
+				<li>
 					Program page operation is implemented in function named <i></i>
 				</li>
 				<li>
@@ -458,6 +479,9 @@
 		<div>
 			<ul>
 				<li>
+					Click <a href="#codeapi">here</a> to jump to codes.
+				</li>
+				<li>
 					Read page operation to transfer data from the NAND memory to the cache is implemented in function <i>read_page()</i>.
 				</li>
 				<li>
@@ -478,9 +502,12 @@
 <hr>
 <hr>
 
-	<h1>Code API</h1>
+	<h1><a name="codeapi"></a> Code API</h1>
 	<p>
 		In the following section we will present the description of different functions that are implemented. All these functions are derived from the datasheet of the Micron NAND flash device MT29F64G08CBABA. It should be compliant of ONFI 2.2 standard.
+	</p>
+	<p>
+		Click <a href="#perf"> here to go back to the Performance Analysis Section</a>
 	</p>
 	<button type="button" class="collapsible">Time Measurement Code</button>
 		<div class="content">

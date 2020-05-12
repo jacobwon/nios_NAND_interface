@@ -367,16 +367,19 @@ void enable_erase()
 // .. R/B should be monotired again after issuing 0XFF command
 void device_initialization()
 {
+	timer_start();
 	*jumper_direction &= ~0x4000;
 	*jumper_direction |= 0x3fff;
 
 	//insert delay here
-	for(uint16_t i=0;i<900;i++);	//50 us max
+	for(uint16_t i=0;i<90;i++);	//50 us max
 
 	// wait for R/B signal to go high
 	while((*jumper_address & RB_mask)==0);
+
 	// now issue RESET command
 	reset_device();
+	STOP_PRINT_CC_TAKEN;
 }
 
 // function to reset the whole device
