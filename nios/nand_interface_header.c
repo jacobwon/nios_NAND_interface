@@ -367,7 +367,6 @@ void enable_erase()
 // .. R/B should be monotired again after issuing 0XFF command
 void device_initialization()
 {
-	timer_start();
 	*jumper_direction &= ~0x4000;
 	*jumper_direction |= 0x3fff;
 
@@ -379,7 +378,6 @@ void device_initialization()
 
 	// now issue RESET command
 	reset_device();
-	STOP_PRINT_CC_TAKEN;
 }
 
 // function to reset the whole device

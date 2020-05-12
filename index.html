@@ -652,51 +652,51 @@
 				<code>
 				// function to send an arbitrary command signal to the NAND device
 				// .. the procedure is as follows ( in the sequence )
-				void send_command(uint8_t command_to_send)
+				FORCE_INLINE inline void send_command(uint8_t command_to_send)
 				{
-						// set the required pins as output from the angle of NIOS machine
-						*jumper_direction |= 0x03fff;
-						*jumper_direction &= ~0x4000;
+					// set the required pins as output from the angle of NIOS machine
+					*jumper_direction |= 0x03fff;
+					*jumper_direction &= ~0x4000;
 
-						// let us first reset the DQ pints
-						*jumper_address &= ~(DQ_mask);
+					// let us first reset the DQ pints
+					*jumper_address &= ~(DQ_mask);
 
-						// .. Write Enable should go low WE => low
-						// .. reset the bit that is connected to WE
-						*jumper_address &= ~(WE_mask);
-						// .. .. Chip Enable should go low CE => low
-						*jumper_address &= ~(CE_mask);
-						// .. .. ALE should go low ALE => low
-						*jumper_address &= ~(ALE_mask);
-						// .. RE goes high
-						*jumper_address |= RE_mask;
-						// .. .. CLE should go high CLE => high
-						*jumper_address |= (CLE_mask);
+					// .. Write Enable should go low WE => low
+					// .. reset the bit that is connected to WE
+					*jumper_address &= ~(WE_mask);
+					// .. .. Chip Enable should go low CE => low
+					*jumper_address &= ~(CE_mask);
+					// .. .. ALE should go low ALE => low
+					*jumper_address &= ~(ALE_mask);
+					// .. RE goes high
+					*jumper_address |= RE_mask;
+					// .. .. CLE should go high CLE => high
+					*jumper_address |= (CLE_mask);
 
-						// .. .. send the command signal in the DQ pins	
-						// .. .. the idea is clear the least 8-bits
-						// .. .. copy the values to be sent
-						*jumper_address = (*jumper_address&(~DQ_mask))|(command_to_send & DQ_mask);
+					// .. .. send the command signal in the DQ pins	
+					// .. .. the idea is clear the least 8-bits
+					// .. .. copy the values to be sent
+					*jumper_address = (*jumper_address&(~DQ_mask))|(command_to_send & DQ_mask);
 
-						//insert delay here
-						// .. tDS = 40 ns
-						SAMPLE_TIME;
+					//insert delay here
+					// .. tDS = 40 ns
+					SAMPLE_TIME;
 
-						// disable write enable again
-						*jumper_address |= (WE_mask);
+					// disable write enable again
+					*jumper_address |= (WE_mask);
 
-						//insert delay here
-						// .. because the command is written on the rising edge of WE
-						// tDH = 20 ns
-						// HOLD_TIME;
-						asm("nop");
+					//insert delay here
+					// .. because the command is written on the rising edge of WE
+					// tDH = 20 ns
+					// HOLD_TIME;
+					asm("nop");
 
-						// disable CLE
-						*jumper_address &= ~(CLE_mask);
-						
-						
-						// reset all the data on DQ pins
-						*jumper_address &= ~(DQ_mask);
+					// disable CLE
+					*jumper_address &= ~(CLE_mask);
+					
+					
+					// reset all the data on DQ pins
+					*jumper_address &= ~(DQ_mask);
 				}
 				</code>
 			</pre>
@@ -709,7 +709,7 @@
 				<code>
 			// function to send address to the NAND device 
 			// .. the procedure is as follows (in the sequence)
-			void send_addresses(uint8_t* address_to_send, uint8_t num_address_bytes)
+			FORCE_INLINE inline void send_addresses(uint8_t* address_to_send, uint8_t num_address_bytes)
 			{
 				// set the required pins as output
 				*jumper_direction |= 0x03fff;
@@ -719,43 +719,43 @@
 				printf("Sending Address: ");
 			#endif
 
-			// .. .. CE goes low
-			*jumper_address &= ~CE_mask;
-			// .. CLE goes low
-			*jumper_address &= ~CLE_mask;
-			// .. ALE goes high
-			*jumper_address |= ALE_mask;
-			// .. RE goes high
-			*jumper_address |= RE_mask;
+				// .. .. CE goes low
+				*jumper_address &= ~CE_mask;
+				// .. CLE goes low
+				*jumper_address &= ~CLE_mask;
+				// .. ALE goes high
+				*jumper_address |= ALE_mask;
+				// .. RE goes high
+				*jumper_address |= RE_mask;
+				
+				for(uint8_t i=0;i&ltnum_address_bytes;i++)
+				{
+					*jumper_address &= ~(WE_mask);
 
-			for(uint8_t i=0;i&ltnum_address_bytes;i++)
-			{
-				*jumper_address &= ~(WE_mask);
+					// .. Put data on the DQ pin
+					// .. .. the idea is clear the least 8-bits
+					// .. .. copy the values to be sent
+					*jumper_address = (*jumper_address&(~DQ_mask))|(address_to_send[i] & DQ_mask);
+			#if DEBUG
+					printf("0x%x,", (uint8_t)*jumper_address&0xff);
+			#endif
+					//.. a simple delay
+					SAMPLE_TIME; //tDS
 
-			// .. Put data on the DQ pin
-			// .. .. the idea is clear the least 8-bits
-			// .. .. copy the values to be sent
-			*jumper_address = (*jumper_address&(~DQ_mask))|(address_to_send[i] & DQ_mask);
-	#if DEBUG
-			printf("0x%x,", (uint8_t)*jumper_address&0xff);
-	#endif
-			//.. a simple delay
-			SAMPLE_TIME; //tDS
-
-			// .. Address is loaded from DQ on rising edge of WE
-			*jumper_address |= WE_mask;
-			// .. maintain WE high for certain duration and make it low
-			
-			// .. put next address bits on DQ and cause rising edge of WE
-			// .. address expected is 5-bytes ColAdd1, ColAdd2, RowAdd1, RowAdd2, RowAdd3
-			
-			//insert delay here
-			HOLD_TIME;	// tDH
-			}
-			// .. ALE goes low
-			*jumper_address &=  ~(ALE_mask);
-			// reset all the data on DQ pins
-			*jumper_address &= ~(DQ_mask);
+					// .. Address is loaded from DQ on rising edge of WE
+					*jumper_address |= WE_mask;
+					// .. maintain WE high for certain duration and make it low
+					
+					// .. put next address bits on DQ and cause rising edge of WE
+					// .. address expected is 5-bytes ColAdd1, ColAdd2, RowAdd1, RowAdd2, RowAdd3
+					
+					//insert delay here
+					asm("nop");	// tDH
+				}
+				// .. ALE goes low
+				*jumper_address &=  ~(ALE_mask);
+				// reset all the data on DQ pins
+				*jumper_address &= ~(DQ_mask);
 
 			#if DEBUG
 				printf("\n");
@@ -773,7 +773,7 @@
 				// function to send address from the host machine to the NAND flash
 				// .. Data is written from DQ[7:0] to the cache register of the selected die (LUN)
 				// .. .. on the rising edge of WE# when CE# is LOW, ALE is LOW, CLE is LOW, and RE# is HIGH
-				void send_data(uint8_t* data_to_send,uint16_t num_data)
+				FORCE_INLINE inline void send_data(uint8_t* data_to_send,uint16_t num_data)
 				{
 					// .. CE should be low
 					*jumper_address &= ~CE_mask;
@@ -799,7 +799,8 @@
 						*jumper_address |= WE_mask;
 
 						//insert delay here
-						HOLD_TIME;	//tDH
+						// HOLD_TIME;	//tDH
+						asm("nop");
 
 						// reset all the data on DQ pins
 						// .. this might be unnecesary
@@ -841,23 +842,20 @@
 
 					for(uint16_t i=0;i&ltnum_data;i++)
 					{			
-						// set the RE to high for next cycle
+						// set the RE to low for next cycle
 						*jumper_address &= ~RE_mask;
 
-						// tRP = 50ns
+						// tREA = 40ns
 						SAMPLE_TIME;
-						asm("nop");
-
-						// .. data is available at DQ pins on the falling edge of RE pin (RE is also input to NAND)
-						*jumper_address |= RE_mask;
-						
-						//insert delay here
-						// .. tREH = 30 ns
-						asm("nop");
 
 						// read the data
 						data_received[i] = *jumper_address & DQ_mask;
-						asm("nop");
+
+						// .. data is available at DQ pins on the rising edge of RE pin (RE is also input to NAND)
+						*jumper_address |= RE_mask;
+						
+						// tREH
+						asm("nop"); // same same 
 					}
 
 					// set the pins as output
@@ -933,10 +931,11 @@
 					*jumper_direction |= 0x3fff;
 
 					//insert delay here
-					for(uint16_t i=0;i<5000;i++);	//50 us max
+					for(uint16_t i=0;i<90;i++);	//50 us max
 
 					// wait for R/B signal to go high
 					while((*jumper_address & RB_mask)==0);
+
 					// now issue RESET command
 					reset_device();
 				}
