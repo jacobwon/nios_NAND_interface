@@ -131,6 +131,27 @@ FORCE_INLINE inline  uint32_t timer_diff()
 // .. all the operations here are asynchronous
 // .. we are using TSOP NAND flash which only supports asynchronous interface
 
+// function to initialize the data and command lines all in inactive state
+// .. here the data lines are output for MCU and all other lines as well
+// ... set data lines as input right before when needed
+// R/B signal will be set as input
+void set_pin_direction_inactive();
+
+//function that sets the data lines as input
+//.. to be used when data is to be received from NAND
+// ... please do not forget to reset them to output once done
+void set_datalines_direction_input();
+
+//function that sets the data lines as output/default
+//.. to be used when sending data or sending command
+// ... this function must be called once the datalines are set as input
+void set_datalines_direction_default();
+
+//function that resets the values of the outputs pin values
+// .. for default state so that we do not do any inadvertent
+// .. operations
+void set_default_pin_values();
+
 // function to send an arbitrary command signal to the NAND device
 // .. the procedure is as follows ( in the sequence )
 // .. .. Write Enable should go low WE => low
@@ -230,7 +251,7 @@ void reset_LUN(uint8_t* address_LUN, uint8_t num_address_bytes);
 // .. ..send 00 as address
 // .. wait for tWHR duration
 // .. read 8-bytes from the DQ pins
-void read_device_id_00(uint8_t* device_id_array);
+void read_manufacturer_id(uint8_t* device_id_array);
 
 // function that reads the device ID and tries to detect the device name
 // .. call the function device_id at address 00h
@@ -246,7 +267,9 @@ void detect_device();
 // .. ..send 20 as address
 // .. wait for tWHR duration
 // .. read 4-bytes from the DQ pins
-void read_device_id_20(uint8_t* device_id_array);
+void read_ONFI_id(uint8_t* device_id_array);
+
+void read_JEDEC_id(uint8_t* device_id_array);
 
 // function to read the unique identifier programmed into the target
 // .. only accepted when device is not busy
