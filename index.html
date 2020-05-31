@@ -46,7 +46,7 @@
 	<h1>Introduction</h1>
 	<hr>
 	<button type="button" class="collapsible"> <i>Preliminary</i></button>
-		<div class="content">
+		<div>
 			<p>
 				NAND flash memory is extensively used for mass storage purpose. They have found their usage in SSDs., memory cards and are also used in almost all the gadgets in todays electronic ecosystem. A number of research focused on NAND memory or flash memory in general are performed focusing primarily in using these memory for security purposes, securing data, making efficient storage strategy etc.
 			</p>
@@ -62,26 +62,15 @@
 				</ul>
 			</p>
 			<p>
-				Althuogh, this implemtation is based on NIOS computer in DE1-SoC system, you can pretty much use it with any microcontroller changing the value of following variables.
+				Although, this implemtation is based on NIOS computer in DE1-SoC system, you can pretty much use it with any microcontroller changing the value of following variables.
 				<ul>
 					<li>JUMPER_LOCATION</li>
 					<li>JUMPER_DIRECTION</li>
 					<li>All the mask values</li>
 				</ul>
 			</p>
-		</div>
-	<hr>
-
-	<button type="button" class="collapsible"> <i>What This Document is?</i></button>
-	<div>
 		<p>
 			This document presents a simulatenous discription and observation made from the code that has been written for MT29F64G08CBABA. MT29F64G08CBABA is a flash memory manufactured by Micron Inc. In addition we will make a comparison with the timings expected from the datasheet as well. Although the obesrvations presented are particular to this device, the fundamentals should be same for similar devices.
-		</p>
-		<p>
-			The code implementation can be found at <a href="https://github.com/sickRanchez-c137/nios_NAND_interface">this link</a>.
-		</p>
-		<p>
-			The initial API documentation can be found at <a href="https://sickranchez-c137.github.io/nios_NAND_interface/">this link</a>.
 		</p>
 		<p>
 			Following are some of the interesting details of this particular flash memory.
@@ -105,42 +94,12 @@
 				<li>The processor runs at 100Mhz.</li>
 			</ul>
 		</p>
-	<hr>
+		<p>
+			The code implementation can be found at <a href="https://github.com/sickRanchez-c137/nios_NAND_interface">this link</a>.
+		</p>
+		</div>
 	<hr>
 
-		<h1>Instrumenting Flash Operations</h1>
-		<hr>
-		<p>
-			In the following section we will analyze the timing characteristics of the different implemented functions in our firmware. Each of the mesurement is made by adding the <i>timer_start()</i> function and <i>STOP_PRINT_CC_TAKEN</i> macro at the beginning and at the end of the function inside the function. This should give the number of clock cycles taken by the function to execute excluding the time taken to initialize stact and jump execution to the function. Thus, this time is called <i>InTime (Ti)</i>.
-		</p>
-		<p>
-			Just placing these two instrumenting codes consumes 9cc.
-			<pre>
-				<code>
-					timer_start();	//start timer (inline function)
-					STOP_PRINT_CC_TAKEN; // macro that captures timer value and prints cc taken
-				</code>
-				They consume 9cc.
-			</pre>
-		</p>
-		<p>
-			Another measurement is made for each of the function where the function call <i>timer_start()</i> is placed before the function call of the function to be measured. After the function returns, the macro <i>STOP_PRINT_CC_TAKEN</i> is placed. This should include the time required to setup stack, jump execution as well as the actual function operation. We call this time <i>OutTime (To)</i>.
-		</p>
-		<p>
-			The instrumentation code <i>timer_start()</i> and <i>STOP_PRINT_CC_TAKEN</i> are removed from the code after their need is finished.
-		</p>
-		<hr>
-		<hr>
-		Some Important Observations made are as follows:
-		<ul>
-			<li>
-				Each instruction that updates the state of a pin (interfaced to the NAND chip) on average takes 86 cc (860 ns).
-			</li>
-			<li>
-				Instrumenting code consumes 9cc. Thus all the time measurements presented in clock cycles should be subtracted with 9cc for accurate value.
-			</li>
-		</ul>
-	</div>
 	<hr>
 	<button type="button" class="collapsible"> <i>Copyright</i></button>
 		<div class="content">
@@ -184,10 +143,33 @@
 				ONFI standard defines NAND flash memory to be interfaced with parallel data lines. These data lines are 8-bit wide signals that also can be used to transfer command as well as the address.
 			</p>
 			<p>
-				Some of the other signals that are needed for interface are: <i>Address Latch Enable (ALE), Command Latch Enable (CLE), Read Enable (RE), Write Enable (WE), Ready/BUSY (R/B), Chip Enable (CE) and Write Protect (WP)</i>.
+				Some of the other signals that are needed for interface are: <i>Address Latch Enable (ALE), Command Latch Enable (CLE), Read Enable (RE), Write Enable (WE), Ready/BUSY (R/B), Chip Enable (CE) and Write Protect (WP)</i>. The signals ALE, CLE, RE#, WE# and CE# are used for asynchronous data interface while other two signals, WP# and R/B# are additional signals.
 			</p>
 			<p>
-				The packages can be 40-pin TSOP or 100-pin BGA for NAND flash memory. In our case the flash memory is MT29F64G08CBABA from Micron Technology which is a 40-pin TSOP flash memory. It is a MLC NAND flash memory in which each cell of flash memory can store 2-bits information.
+				The packages can be 48-pin TSOP or 100-pin BGA for NAND flash memory. In our case the flash memory is MT29F64G08CBABA from Micron Technology which is a 48-pin TSOP flash memory. It is a MLC NAND flash memory in which each cell of flash memory can store 2-bits information.
+			</p>
+			<p>
+				The command and data pins are muxed together, thus it is the use of signals ALE and CLE that identifies the data being sent. For the breakdown of address:
+				<ul>
+					<li>
+						The total address is 5 X 8 bits
+					</li>
+					<li>
+						First Byte CA7, CA6...CA1, CA0 and Second Byte Low, Low, CA13, CA12...CA9,CA8 where CA is the column address. (Each page has 8192 bytes+744 extra bytes)
+					</li>
+					<li>
+						Third Byte PA7,PA6,...PA1,PA0 where PA is the page address (Block has 256 pages)
+					</li>
+					<li>
+						Fourth Byte BA15, BA14... BA9,BA8 where BA is the block address
+					</li>
+					<li>
+						Fifth Byte Low, Low, Low, LA0, BA19, BA18, BA17 and BA16 where LA is LUN address. (There are 4096 blocks)
+					</li>
+					<li>
+						PA, BA abd LUN addresses are collectively called row address.
+					</li>
+				</ul>
 			</p>
 			<p>
 				On the microcontroller side, we are using NIOS computer as our microcontroller in DE1-SoC. The parallel port of the DE1-SoC is used to interface with the flash memory. Each parallel port is 32-bit wide, thus it is sufficient to use a single parallel port for our interfacing purpose. Since all the IO are memory mapped, the address of the data is indicated by <i>JUMPER_LOCATION</i> in the code, while the direction register is indicated by <i>JUMPER_DIRECTION</i>.
@@ -201,6 +183,40 @@
 	<hr>
 
 	<h1><a name="perf"></a> Performance Analysis</h1>
+	<hr>
+	<button type="button" class="collapsible"> <i>Instrumenting Flash Operations</i></button>
+		<div>
+			<p>
+				In the following section we will analyze the timing characteristics of the different implemented functions in our firmware. Each of the mesurement is made by adding the <i>timer_start()</i> function and <i>STOP_PRINT_CC_TAKEN</i> macro at the beginning and at the end of the function inside the function. This should give the number of clock cycles taken by the function to execute excluding the time taken to initialize stact and jump execution to the function. Thus, this time is called <i>InTime (Ti)</i>.
+			</p>
+			<p>
+				Just placing these two instrumenting codes consumes 9cc.
+				<pre>
+					<code>
+						timer_start();	//start timer (inline function)
+						STOP_PRINT_CC_TAKEN; // macro that captures timer value and prints cc taken
+					</code>
+					They consume 9cc.
+				</pre>
+			</p>
+			<p>
+				Another measurement is made for each of the function where the function call <i>timer_start()</i> is placed before the function call of the function to be measured. After the function returns, the macro <i>STOP_PRINT_CC_TAKEN</i> is placed. This should include the time required to setup stack, jump execution as well as the actual function operation. We call this time <i>OutTime (To)</i>.
+			</p>
+			<p>
+				The instrumentation code <i>timer_start()</i> and <i>STOP_PRINT_CC_TAKEN</i> are removed from the code after their need is finished.
+			</p>
+			<hr>
+			<hr>
+			Some Important Observations made are as follows:
+			<ul>
+				<li>
+					Each instruction that updates the state of a pin (interfaced to the NAND chip) on average takes 86 cc (860 ns).
+				</li>
+				<li>
+					Instrumenting code consumes 9cc. Thus all the time measurements presented in clock cycles should be subtracted with 9cc for accurate value.
+				</li>
+			</ul>
+		</div>
 	<hr>
 	<button type="button" class="collapsible"> <i>Device Initialization</i></button>
 		<div>
@@ -531,12 +547,12 @@
 				// .. timer counter snapshot high (only 16-bits)
 				#define TIMER_COUNTER_SNAP_HIGH ((uint32_t*) 0xff202014)
 				// .. instead of making call to timer_diff(), use the following statement
-				#define PRINT_CC_TAKEN printf(".. the last operation took %lu cc\n.",timer_diff())
+				#define PRINT_CC_TAKEN printf(".. the last operation took %lu cc.\n",timer_diff())
 
 				#define STOP_PRINT_CC_TAKEN {\
-								uint32_t clock_count = timer_diff();\
-								printf(".. the last operation took %lu cc.\n",clock_count);\
-							}
+												uint32_t clock_count = timer_diff();\
+												printf(".. the last operation took %lu cc.\n",clock_count);\
+											}
 
 				// function timer_start()
 				// .. following function starts the timer in downwards direction
@@ -654,28 +670,23 @@
 				// .. the procedure is as follows ( in the sequence )
 				FORCE_INLINE inline void send_command(uint8_t command_to_send)
 				{
-					// set the required pins as output from the angle of NIOS machine
-					*jumper_direction |= 0x03fff;
-					*jumper_direction &= ~0x4000;
-
-					// let us first reset the DQ pints
-					*jumper_address &= ~(DQ_mask);
-
 					// .. Write Enable should go low WE => low
 					// .. reset the bit that is connected to WE
 					*jumper_address &= ~(WE_mask);
 					// .. .. Chip Enable should go low CE => low
 					*jumper_address &= ~(CE_mask);
 					// .. .. ALE should go low ALE => low
-					*jumper_address &= ~(ALE_mask);
-					// .. RE goes high
-					*jumper_address |= RE_mask;
+					// .. .. ALE should be zero from before
+					// .. ..RE goes high
+					// .. ..RE should be high from before
 					// .. .. CLE should go high CLE => high
 					*jumper_address |= (CLE_mask);
 
 					// .. .. send the command signal in the DQ pins	
 					// .. .. the idea is clear the least 8-bits
 					// .. .. copy the values to be sent
+					// .. .. ..the first part reset the DQ pins
+					// .. .. ..the second part has the actual command to send
 					*jumper_address = (*jumper_address&(~DQ_mask))|(command_to_send & DQ_mask);
 
 					//insert delay here
@@ -693,10 +704,8 @@
 
 					// disable CLE
 					*jumper_address &= ~(CLE_mask);
-					
-					
-					// reset all the data on DQ pins
-					*jumper_address &= ~(DQ_mask);
+					//make sure to call set_default_pin_values()
+					set_default_pin_values();
 				}
 				</code>
 			</pre>
@@ -707,60 +716,54 @@
 		<div class="content">
 			<pre>
 				<code>
-			// function to send address to the NAND device 
-			// .. the procedure is as follows (in the sequence)
-			FORCE_INLINE inline void send_addresses(uint8_t* address_to_send, uint8_t num_address_bytes)
-			{
-				// set the required pins as output
-				*jumper_direction |= 0x03fff;
-				*jumper_direction &= ~0x4000;
-
-			#if DEBUG
-				printf("Sending Address: ");
-			#endif
-
-				// .. .. CE goes low
-				*jumper_address &= ~CE_mask;
-				// .. CLE goes low
-				*jumper_address &= ~CLE_mask;
-				// .. ALE goes high
-				*jumper_address |= ALE_mask;
-				// .. RE goes high
-				*jumper_address |= RE_mask;
-				
-				for(uint8_t i=0;i&ltnum_address_bytes;i++)
+				// function to send address to the NAND device 
+				// .. the procedure is as follows (in the sequence)
+				FORCE_INLINE inline void send_addresses(uint8_t* address_to_send, uint8_t num_address_bytes)
 				{
-					*jumper_address &= ~(WE_mask);
+				#if DEBUG
+					printf("Sending Address: ");
+				#endif
 
-					// .. Put data on the DQ pin
-					// .. .. the idea is clear the least 8-bits
-					// .. .. copy the values to be sent
-					*jumper_address = (*jumper_address&(~DQ_mask))|(address_to_send[i] & DQ_mask);
-			#if DEBUG
-					printf("0x%x,", (uint8_t)*jumper_address&0xff);
-			#endif
-					//.. a simple delay
-					SAMPLE_TIME; //tDS
+					// .. .. CE goes low
+					*jumper_address &= ~CE_mask;
+					// .. CLE goes low
+					// .. CLE should be 0 from before
+					// .. ALE goes high
+					*jumper_address |= ALE_mask;
+					// .. RE goes high
+					// .. RE should be high from before
+					
+					for(uint8_t i=0;i&ltnum_address_bytes;i++)
+					{
+						*jumper_address &= ~(WE_mask);
 
-					// .. Address is loaded from DQ on rising edge of WE
-					*jumper_address |= WE_mask;
-					// .. maintain WE high for certain duration and make it low
-					
-					// .. put next address bits on DQ and cause rising edge of WE
-					// .. address expected is 5-bytes ColAdd1, ColAdd2, RowAdd1, RowAdd2, RowAdd3
-					
-					//insert delay here
-					asm("nop");	// tDH
+						// .. Put data on the DQ pin
+						// .. .. the idea is clear the least 8-bits
+						// .. .. copy the values to be sent
+						*jumper_address = (*jumper_address&(~DQ_mask))|(address_to_send[i] & DQ_mask);
+				#if DEBUG
+						printf("0x%x,", (uint8_t)*jumper_address&0xff);
+				#endif
+						//.. a simple delay
+						SAMPLE_TIME; //tDS
+
+						// .. Address is loaded from DQ on rising edge of WE
+						*jumper_address |= WE_mask;
+						// .. maintain WE high for certain duration and make it low
+						
+						// .. put next address bits on DQ and cause rising edge of WE
+						// .. address expected is 5-bytes ColAdd1, ColAdd2, RowAdd1, RowAdd2, RowAdd3
+						
+						//insert delay here
+						asm("nop");	// tDH
+					}
+					//make sure to call set_default_pin_values()
+					set_default_pin_values();
+
+				#if DEBUG
+					printf("\n");
+				#endif
 				}
-				// .. ALE goes low
-				*jumper_address &=  ~(ALE_mask);
-				// reset all the data on DQ pins
-				*jumper_address &= ~(DQ_mask);
-
-			#if DEBUG
-				printf("\n");
-			#endif
-			}
 				</code>
 			</pre>
 		</div>
@@ -770,19 +773,13 @@
 		<div class="content">
 			<pre>
 				<code>
-				// function to send address from the host machine to the NAND flash
+				// function to send data from the host machine to the NAND flash
 				// .. Data is written from DQ[7:0] to the cache register of the selected die (LUN)
 				// .. .. on the rising edge of WE# when CE# is LOW, ALE is LOW, CLE is LOW, and RE# is HIGH
 				FORCE_INLINE inline void send_data(uint8_t* data_to_send,uint16_t num_data)
 				{
 					// .. CE should be low
 					*jumper_address &= ~CE_mask;
-					// .. CLE should be low
-					*jumper_address &= ~CLE_mask;
-					// .. ALE should be low
-					*jumper_address &= ~ALE_mask;
-					// .. RE should be high
-					*jumper_address |= RE_mask;
 
 					for(uint16_t i=0;i&ltnum_data;i++)
 					{
@@ -806,6 +803,8 @@
 						// .. this might be unnecesary
 						*jumper_address &= ~(DQ_mask);		
 					}
+					//make sure to call set_default_pin_values()
+					set_default_pin_values();
 				}
 				</code>
 			</pre>
@@ -821,9 +820,7 @@
 				// .. it is supported following a read operation of NAND array
 				void get_data(uint8_t* data_received,uint16_t num_data)
 				{
-					// set the DQ pins as IP to the NIOS processor
-					// .. 0 is IP and 1 is OP
-					*jumper_direction &= ~0x40ff;
+					set_datalines_direction_input();
 
 					// .. data can be received when on ready state (RDY signal)
 					// .. ensure RDY is high
@@ -835,10 +832,9 @@
 					// .. .. CE should be low
 					*jumper_address &= ~CE_mask;
 					// .. make WE high
-					*jumper_address |= WE_mask;
+					// .. .. WE should be high from before
 					// .. .. ALE and CLE should be low
-					*jumper_address &= ~ALE_mask;
-					*jumper_address &= ~CLE_mask;
+					// .. .. they should be low from before
 
 					for(uint16_t i=0;i&ltnum_data;i++)
 					{			
@@ -859,7 +855,9 @@
 					}
 
 					// set the pins as output
-					*jumper_direction |= 0x03fff;	
+					set_datalines_direction_default();
+					//make sure to call set_default_pin_values()
+					set_default_pin_values();
 				}
 				</code>
 			</pre>
@@ -927,8 +925,8 @@
 				// .. R/B should be monotired again after issuing 0XFF command
 				void device_initialization()
 				{
-					*jumper_direction &= ~0x4000;
-					*jumper_direction |= 0x3fff;
+					set_pin_direction_inactive();
+					set_default_pin_values();
 
 					//insert delay here
 					for(uint16_t i=0;i<90;i++);	//50 us max
@@ -1003,7 +1001,7 @@
 <hr>
 
 
-		<button type="button" class="collapsible"> <i>void read_device_id_00(..)</i></button>
+		<button type="button" class="collapsible"> <i>void read_manufacturer_id(..)</i></button>
 		<div class="content">
 			<pre>
 				<code>
@@ -1016,7 +1014,7 @@
 				// .. ..send 00 as address
 				// .. wait for tWHR duration
 				// .. read 8-bytes from the DQ pins
-				void read_device_id_00(uint8_t* device_id_array)
+				void read_manufacturer_id(uint8_t* device_id_array)
 				{
 					// make sure none of the LUNs are busy
 					while((*jumper_address & RB_mask)==0);
@@ -1031,6 +1029,10 @@
 					tWHR;
 
 					get_data(device_id_array,8);
+				#if DEBUG
+					printf("After reading from the device, manufacturer ID is:\n");
+					print_array(device_id_array,8);
+				#endif
 				}
 				</code>
 			</pre>
@@ -1111,7 +1113,7 @@
 <hr>
 
 
-		<button type="button" class="collapsible"> <i>void read_device_id_20(..)</i></button>
+		<button type="button" class="collapsible"> <i>void read_ONFI_id(..)</i></button>
 		<div class="content">
 			<pre>
 				<code>
@@ -1124,7 +1126,7 @@
 				// .. ..send 20 as address
 				// .. wait for tWHR duration
 				// .. read 4-bytes from the DQ pins
-				void read_device_id_20(uint8_t* device_id_array)
+				void read_ONFI_id(uint8_t* device_id_array)
 				{
 					// make sure none of the LUNs are busy
 					while((*jumper_address & RB_mask)==0);
@@ -1139,9 +1141,38 @@
 
 					get_data(device_id_array,4);
 				#if DEBUG
-					printf("After reading from the device\n");
+					printf("After reading from the device, ONFI ID is:\n");
 					print_array(device_id_array,4);
 				#endif
+				}
+				</code>
+			</pre>
+		</div>
+<hr>
+
+
+		<button type="button" class="collapsible"> <i>void read_JEDEC_id(..)</i></button>
+		<div class="content">
+			<pre>
+				<code>
+				void read_JEDEC_id(uint8_t* device_id_array)
+				{
+					// make sure none of the LUNs are busy
+					while((*jumper_address & RB_mask)==0);
+					// read ID command
+					send_command(0x90);
+					// send address 00
+					send_address(0x40);
+					// wait for tWHR duration
+					
+					// .. tWHR = 120ns
+					tWHR;
+
+					get_data(device_id_array,5);
+				#if DEBUG
+					printf("After reading from the device, JEDEC ID is:\n");
+					print_array(device_id_array,5);
+				#endif	
 				}
 				</code>
 			</pre>
